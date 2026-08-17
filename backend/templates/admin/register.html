@@ -1,0 +1,44 @@
+{% extends 'unfold/layouts/unauthenticated.html' %}
+
+{% load i18n static unfold %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    {{ form.media }}
+{% endblock %}
+
+{% block title %}
+    Ro'yxatdan o'tish | {{ site_title|default:'SaveTube' }}
+{% endblock %}
+
+{% block content %}
+    {% include "unfold/helpers/unauthenticated_title.html" with title=site_title|default:'SaveTube' subtitle='Yangi hisob yaratish' %}
+
+    {% include "unfold/helpers/messages.html" %}
+
+    {% if form.errors or form.non_field_errors %}
+        <div class="flex flex-col gap-4 mb-8 *:mb-0">
+            {% include "unfold/helpers/messages/errornote.html" with errors=form.errors %}
+            {% include "unfold/helpers/messages/error.html" with errors=form.non_field_errors %}
+        </div>
+    {% endif %}
+
+    <form action="{% url 'register' %}" method="post" id="register-form">
+        {% csrf_token %}
+
+        {% for field in form %}
+            {% include "unfold/helpers/field.html" with field=field %}
+        {% endfor %}
+
+        <div class="flex flex-col gap-3 mt-6">
+            {% component "unfold/components/button.html" with submit=1 variant="primary" class="submit-row w-full" %}
+                Ro'yxatdan o'tish <span class="material-symbols-outlined relative right-0 transition-all group-hover:-right-1 text-sm">person_add</span>
+            {% endcomponent %}
+
+            {% url 'admin:login' as login_url %}
+            {% component "unfold/components/button.html" with href=login_url variant="secondary" class="w-full" %}
+                Tizimga kirish
+            {% endcomponent %}
+        </div>
+    </form>
+{% endblock %}

@@ -6,8 +6,11 @@ from django.conf.urls.static import static
 from core.backup import backup_page
 
 from core.dashboard_views import bulk_shift_videos, video_preview_view
+from core.views import homepage_redirect, RegisterView
 
 urlpatterns = [
+    path('', homepage_redirect, name='home'),
+    path('register/', RegisterView.as_view(), name='register'),
     path('admin/backup/', backup_page, name='backup_page'),
     path('admin/bulk-shift/', bulk_shift_videos, name='bulk_shift_videos'),
     path('admin/video-preview/<int:pk>/', video_preview_view, name='video_preview_view'),
