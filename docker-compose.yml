@@ -1,0 +1,26 @@
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: savetube_redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+
+  backend:
+    build: ./backend
+    container_name: savetube_backend
+    depends_on:
+      - redis
+    ports:
+      - "8095:8000"
+    volumes:
+      - ./backend:/app
+    environment:
+      - DEBUG=1
+      - TZ=Asia/Tashkent
+      - REDIS_URL=redis://redis:6379/1
+    restart: unless-stopped
+
+volumes:
+  redis-data:

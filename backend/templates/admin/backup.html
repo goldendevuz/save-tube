@@ -1,0 +1,55 @@
+{% extends "admin/base_site.html" %}
+{% load i18n unfold %}
+
+{% block breadcrumbs %}{% endblock %}
+
+{% block content %}
+<div class="flex flex-col gap-8">
+    <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        {% component "unfold/components/card.html" with title="Zaxira yuklab olish (Export)" %}
+            <p class="mb-4 text-sm text-font-subtle-light dark:text-font-subtle-dark">
+                Barcha ma'lumotlar (foydalanuvchilar, kanallar, videolar, pleylistlar, audit jurnali va h.k.)
+                bitta JSON faylga saqlanadi.
+            </p>
+            <form method="post" action="{% url 'backup_page' %}">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="export">
+                {% component "unfold/components/button.html" with variant="secondary" type="submit" %}
+                    {% trans "Zaxira faylni yuklab olish" %}
+                {% endcomponent %}
+            </form>
+        {% endcomponent %}
+
+        {% component "unfold/components/card.html" with title="Ma'lumotlarni tiklash (Import)" %}
+            <p class="mb-4 text-sm text-font-subtle-light dark:text-font-subtle-dark">
+                Yuklab olingan JSON (yoki ZIP) faylni tanlang — barcha ma'lumotlar qayta tiklanadi.
+            </p>
+            <p class="mb-4 text-xs text-font-subtle-light dark:text-font-subtle-dark">
+                Eslatma: tiklash yangi (bo'sh) bazaga mo'ljallangan. Bazada allaqachon
+                shu ma'lumot bo'lsa, xatolik chiqishi mumkin.
+            </p>
+            <form method="post" action="{% url 'backup_page' %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="import">
+                <input type="file" name="file" accept=".json,.zip" class="mb-4 block w-full" required>
+                {% component "unfold/components/button.html" with variant="danger" type="submit" %}
+                    {% trans "Ma'lumotlarni tiklash" %}
+                {% endcomponent %}
+            </form>
+        {% endcomponent %}
+    </div>
+
+    {% component "unfold/components/card.html" with title="Joriy ma'lumotlar" %}
+        <table class="border-spacing-none border-separate text-left text-sm w-full">
+            <tbody>
+                {% for key, count in model_counts.items %}
+                    <tr>
+                        <td class="border-b border-base-200 py-2 pr-3 dark:border-base-800">{{ key }}</td>
+                        <td class="border-b border-base-200 py-2 dark:border-base-800">{{ count }} ta</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endcomponent %}
+</div>
+{% endblock %}

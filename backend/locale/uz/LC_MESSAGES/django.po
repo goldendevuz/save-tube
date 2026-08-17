@@ -1,0 +1,191 @@
+# O'zbek tili tarjimasi
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: uz\n"
+
+msgid "Save and add another"
+msgstr "Saqlash va yana qo'shish"
+
+msgid "Save and continue editing"
+msgstr "Saqlash va tahrirlashni davom ettirish"
+
+msgid "Save"
+msgstr "Saqlash"
+
+msgid "Delete"
+msgstr "O'chirish"
+
+msgid "Add"
+msgstr "Qo'shish"
+
+msgid "Change"
+msgstr "O'zgartirish"
+
+msgid "Search"
+msgstr "Qidirish"
+
+msgid "Go"
+msgstr "Bajarish"
+
+msgid "Select all"
+msgstr "Hammasini tanlash"
+
+msgid "Select %(total_count)s %(module_name)s"
+msgstr "%(total_count)s %(module_name)s tanlash"
+
+msgid "Yes, I'm sure"
+msgstr "Ha, ishonchim komil"
+
+msgid "No, take me back"
+msgstr "Yo'q, orqaga"
+
+msgid "Are you sure?"
+msgstr "Ishonchingiz komilmi?"
+
+msgid "Today"
+msgstr "Bugun"
+
+msgid "Now"
+msgstr "Hozir"
+
+msgid "Choose a date"
+msgstr "Sana tanlang"
+
+msgid "Choose a time"
+msgstr "Vaqt tanlang"
+
+msgid "Filter"
+msgstr "Filtr"
+
+msgid "Clear all filters"
+msgstr "Barcha filtrlarni tozalash"
+
+msgid "My Actions"
+msgstr "Mening amallarim"
+
+msgid "None"
+msgstr "Yo'q"
+
+msgid "Unknown"
+msgstr "Noma'lum"
+
+msgid "Action:"
+msgstr "Amal:"
+
+msgid "Go!"
+msgstr "Bajar!"
+
+msgid "Please select at least one %(object_name)s"
+msgstr "Kamida bitta %(object_name)s tanlang"
+
+msgid "Add %(name)s"
+msgstr "%(name)s qo'shish"
+
+msgid "Change %(name)s"
+msgstr "%(name)s o'zgartirish"
+
+msgid "View %(name)s"
+msgstr "%(name)s ko'rish"
+
+msgid "%(count)d %(name)s was changed successfully."
+msgstr "%(count)d %(name)s muvaffaqiyatli o'zgartirildi."
+
+msgid "The %(name)s was added successfully."
+msgstr "%(name)s muvaffaqiyatli qo'shildi."
+
+msgid "The %(name)s was changed successfully."
+msgstr "%(name)s muvaffaqiyatli o'zgartirildi."
+
+msgid "The %(name)s was deleted successfully."
+msgstr "%(name)s muvaffaqiyatli o'chirildi."
+
+msgid "Select %s"
+msgstr "%s tanlang"
+
+msgid "Select %s to change"
+msgstr "O'zgartirish uchun %s tanlang"
+
+msgid "No action selected."
+msgstr "Hech qanday amal tanlanmagan."
+
+msgid "Home"
+msgstr "Bosh sahifa"
+
+msgid "Log in"
+msgstr "Kirish"
+
+msgid "Log out"
+msgstr "Chiqish"
+
+msgid "Username:"
+msgstr "Foydalanuvchi nomi:"
+
+msgid "Password:"
+msgstr "Parol:"
+
+msgid "Password (again):"
+msgstr "Parol (takroran):"
+
+msgid "Please correct the error below."
+msgstr "Iltimos, quyidagi xatoni to'g'irlang."
+
+msgid "Please correct the errors below."
+msgstr "Iltimos, quyidagi xatolarni to'g'irlang."
+
+msgid "History"
+msgstr "Tarix"
+
+msgid "View on site"
+msgstr "Saytda ko'rish"
+
+msgid "Add another"
+msgstr "Yana qo'shish"
+
+msgid "Close"
+msgstr "Yopish"
+
+msgid "Filters"
+msgstr "Filtrlar"
+
+msgid "Hide"
+msgstr "Yashirish"
+
+msgid "Show"
+msgstr "Ko'rsatish"
+
+msgid "Yes"
+msgstr "Ha"
+
+msgid "No"
+msgstr "Yo'q"
+
+msgid "Type to search"
+msgstr "Qidirish uchun yozing..."
+
+msgid "The {name} “{obj}” was added successfully. You may add another {name} below."
+msgstr "“{obj}” nomli {name} muvaffaqiyatli qo'shildi. Quyida yana {name} qo'shishingiz mumkin."
+
+msgid "The {name} “{obj}” was changed successfully. You may add another {name} below."
+msgstr "“{obj}” nomli {name} muvaffaqiyatli o'zgartirildi. Quyida yana {name} qo'shishingiz mumkin."
+
+msgid "The {name} “{obj}” was added successfully. You may edit it again below."
+msgstr "“{obj}” nomli {name} muvaffaqiyatli qo'shildi. Quyida uni yana tahrirlashingiz mumkin."
+
+msgid "The {name} “{obj}” was changed successfully. You may edit it again below."
+msgstr "“{obj}” nomli {name} muvaffaqiyatli o'zgartirildi. Quyida uni yana tahrirlashingiz mumkin."
+
+msgid "The {name} “{obj}” was added successfully."
+msgstr "“{obj}” nomli {name} muvaffaqiyatli qo'shildi."
+
+msgid "The {name} “{obj}” was changed successfully."
+msgstr "“{obj}” nomli {name} muvaffaqiyatli o'zgartirildi."
+
+msgid "The {name} “{obj}” was deleted successfully."
+msgstr "“{obj}” nomli {name} muvaffaqiyatli o'chirildi."
+
+msgid "%(count)s %(name)s was changed successfully."
+msgid_plural "%(count)s %(name)s were changed successfully."
+msgstr[0] "%(count)s ta %(name)s muvaffaqiyatli o'zgartirildi."
+msgstr[1] "%(count)s ta %(name)s muvaffaqiyatli o'zgartirildi."

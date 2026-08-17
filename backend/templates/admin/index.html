@@ -1,0 +1,387 @@
+{% extends "admin/base_site.html" %}
+
+{% load i18n unfold %}
+
+{% block breadcrumbs %}{% endblock %}
+
+{% block content %}
+    <div class="flex flex-col gap-8">
+        {# ── KPI kartalar ── #}
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {% for kpi in kpi %}
+                {% component "unfold/components/card.html" with href=kpi.href icon=kpi.icon %}
+                    {% component "unfold/components/text.html" %}
+                        {{ kpi.title }}
+                    {% endcomponent %}
+
+                    {% component "unfold/components/title.html" %}
+                        {{ kpi.metric }}
+                    {% endcomponent %}
+
+                    {% component "unfold/components/text.html" with class="text-font-subtle-light dark:text-font-subtle-dark" %}
+                        {{ kpi.footer }}
+                    {% endcomponent %}
+                {% endcomponent %}
+            {% endfor %}
+        </div>
+
+        {# ── 📋 Bugungi videolar + CRM stats ── #}
+        <div class="flex flex-col gap-8 lg:flex-row">
+            <div class="grow">
+                {% component "unfold/components/card.html" with title="📋 Bugungi videolar" %}
+                    {# Mini stats #}
+                    <div class="flex flex-wrap gap-3 mb-4 text-sm justify-between items-center">
+                        <div class="flex flex-wrap gap-3">
+                            <span class="inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-medium bg-primary-50 text-primary-700 dark:bg-primary-900/30 dark:text-primary-300">
+                                📊 Jami: {{ crm_stats.today_total }}
+                            </span>
+                            <span class="inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">
+                                🆕 Yangi: {{ crm_stats.today_new }}
+                            </span>
+                            <span class="inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-medium bg-green-50 text-green-700 dark:bg-green-900/30 dark:text-green-300">
+                                ✅ Ko'rilgan: {{ crm_stats.today_watched }}
+                            </span>
+                            <span class="inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-medium bg-yellow-50 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-300">
+                                ⏭️ O'tkazib yuborilgan: {{ crm_stats.today_skipped }}
+                            </span>
+                            <span class="inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-medium bg-violet-50 text-violet-700 dark:bg-violet-900/30 dark:text-violet-300">
+                                ⏱️ {{ crm_stats.today_duration }}
+                            </span>
+                        </div>
+                        <div class="flex flex-wrap gap-2 items-center">
+                            <span class="text-font-subtle-light dark:text-font-subtle-dark">Vaqtini surish:</span>
+                            <button type="submit" form="bulk-shift-form" name="shift_type" value="day" class="px-2 py-1 rounded bg-base-200 hover:bg-base-300 dark:bg-base-800 dark:hover:bg-base-700 text-xs font-medium">+1 kun</button>
+                            <button type="submit" form="bulk-shift-form" name="shift_type" value="week" class="px-2 py-1 rounded bg-base-200 hover:bg-base-300 dark:bg-base-800 dark:hover:bg-base-700 text-xs font-medium">+1 hafta</button>
+                            <button type="submit" form="bulk-shift-form" name="shift_type" value="month" class="px-2 py-1 rounded bg-base-200 hover:bg-base-300 dark:bg-base-800 dark:hover:bg-base-700 text-xs font-medium">+1 oy</button>
+                            <button type="submit" form="bulk-shift-form" name="shift_type" value="year" class="px-2 py-1 rounded bg-base-200 hover:bg-base-300 dark:bg-base-800 dark:hover:bg-base-700 text-xs font-medium">+1 yil</button>
+                        </div>
+                    </div>
+                    <form id="bulk-shift-form" method="post" action="{% url 'bulk_shift_videos' %}">
+                        {% csrf_token %}
+                    <div class="overflow-x-auto">
+                        <table class="border-spacing-none border-separate text-left text-sm w-full">
+                            <thead class="text-font-important-light dark:text-font-important-dark">
+                                <tr>
+                                    <th class="border-b border-base-200 font-semibold pb-3 pr-3 dark:border-base-800 w-6">
+                                        <input type="checkbox" onchange="document.querySelectorAll('.video-cb').forEach(cb => cb.checked = this.checked)" class="rounded border-base-300 dark:border-base-700 text-primary-600 focus:ring-primary-500">
+                                    </th>
+                                    <th class="border-b border-base-200 font-semibold pb-3 pr-3 dark:border-base-800 w-6">#</th>
+                                    <th class="border-b border-base-200 font-semibold pb-3 pr-3 dark:border-base-800">Sarlavha</th>
+                                    <th class="border-b border-base-200 font-semibold pb-3 pr-3 dark:border-base-800">Kategoriya</th>
+                                    <th class="border-b border-base-200 font-semibold pb-3 pr-3 dark:border-base-800">Muhimligi</th>
+                                    <th class="border-b border-base-200 font-semibold pb-3 pr-3 dark:border-base-800">Davomiyligi</th>
+                                    <th class="border-b border-base-200 font-semibold pb-3 dark:border-base-800">Holat</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for video in today_videos %}
+                                    <tr class="{% if video.status == 'watched' %}opacity-50{% endif %}{% if video.status == 'skipped' %}opacity-40 line-through{% endif %}">
+                                        <td class="border-b border-base-200 py-3 pr-3 dark:border-base-800">
+                                            <input type="checkbox" name="video_ids" value="{{ video.pk }}" class="video-cb rounded border-base-300 dark:border-base-700 text-primary-600 focus:ring-primary-500">
+                                        </td>
+                                        <td class="border-b border-base-200 py-3 pr-3 dark:border-base-800 text-font-subtle-light dark:text-font-subtle-dark">
+                                            {{ forloop.counter }}
+                                        </td>
+                                        <td class="border-b border-base-200 py-3 pr-3 dark:border-base-800">
+                                            <a class="hover:underline font-medium" href="{% url 'video_preview_view' video.pk %}">{{ video.title|truncatechars:50 }}</a>
+                                            {% for channel in video.channels.all %}
+                                                <br><span class="text-xs text-font-subtle-light dark:text-font-subtle-dark">{{ channel.title|default:channel.url }}</span>
+                                            {% endfor %}
+                                        </td>
+                                        <td class="border-b border-base-200 py-3 pr-3 dark:border-base-800 text-xs">
+                                            {{ video.category.name|default:"—" }}
+                                        </td>
+                                        <td class="border-b border-base-200 py-3 pr-3 dark:border-base-800 whitespace-nowrap">
+                                            {{ video.priority.name|default:"—" }}
+                                        </td>
+                                        <td class="border-b border-base-200 py-3 pr-3 dark:border-base-800 whitespace-nowrap text-xs">
+                                            {{ video.duration_display }}
+                                        </td>
+                                        <td class="border-b border-base-200 py-3 dark:border-base-800">
+                                            {% if video.status == 'new' %}
+                                                {% component "unfold/helpers/label.html" with variant="info" text=video.get_status_display %}{% endcomponent %}
+                                            {% elif video.status == 'watched' %}
+                                                {% component "unfold/helpers/label.html" with variant="success" text=video.get_status_display %}{% endcomponent %}
+                                            {% elif video.status == 'skipped' %}
+                                                {% component "unfold/helpers/label.html" with variant="warning" text=video.get_status_display %}{% endcomponent %}
+                                            {% elif video.status == 'archived' %}
+                                                {% component "unfold/helpers/label.html" with variant="danger" text=video.get_status_display %}{% endcomponent %}
+                                            {% else %}
+                                                {{ video.get_status_display }}
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td class="py-3 text-font-subtle-light dark:text-font-subtle-dark" colspan="7">
+                                            🎉 Bugun uchun tayinlangan video yo'q. Dam oling!
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </form>
+                    </div>
+                {% endcomponent %}
+            </div>
+
+            {# ── Sidebar: CRM umumiy stats ── #}
+            <div class="lg:w-80 shrink-0 flex flex-col gap-4">
+                {% component "unfold/components/card.html" with title="📊 Umumiy holat" %}
+                    <div class="flex flex-col gap-3 text-sm">
+                        <div class="flex justify-between items-center">
+                            <span class="text-font-subtle-light dark:text-font-subtle-dark">Jami videolar</span>
+                            <span class="font-semibold">{{ crm_stats.total_count }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-font-subtle-light dark:text-font-subtle-dark">🆕 Yangi</span>
+                            <span class="font-semibold text-blue-600 dark:text-blue-400">{{ crm_stats.new_count }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-font-subtle-light dark:text-font-subtle-dark">✅ Ko'rilgan</span>
+                            <span class="font-semibold text-green-600 dark:text-green-400">{{ crm_stats.watched_count }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-font-subtle-light dark:text-font-subtle-dark">⏭️ O'tkazib yuborilgan</span>
+                            <span class="font-semibold text-yellow-600 dark:text-yellow-400">{{ crm_stats.skipped_count }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-font-subtle-light dark:text-font-subtle-dark">📦 Arxivlangan</span>
+                            <span class="font-semibold text-gray-500">{{ crm_stats.archived_count }}</span>
+                        </div>
+                        <hr class="border-base-200 dark:border-base-800">
+                        <div class="flex justify-between items-center">
+                            <span class="text-font-subtle-light dark:text-font-subtle-dark">⚠️ Muddati o'tgan</span>
+                            <span class="font-semibold {% if crm_stats.overdue_count > 0 %}text-red-600 dark:text-red-400{% endif %}">{{ crm_stats.overdue_count }}</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-font-subtle-light dark:text-font-subtle-dark">📈 Ko'rilganlik</span>
+                            <span class="font-semibold">{{ crm_stats.watch_pct }}%</span>
+                        </div>
+                        {% if crm_stats.total_count > 0 %}
+                        <div class="w-full bg-base-200 dark:bg-base-700 rounded-full h-2 mt-1">
+                            <div class="bg-green-500 h-2 rounded-full" style="width: {{ crm_stats.watch_pct }}%"></div>
+                        </div>
+                        {% endif %}
+                    </div>
+                {% endcomponent %}
+
+            </div>
+        </div>
+
+        {# ── ⚠️ Muddati o'tgan videolar ── #}
+        {% if overdue_videos %}
+        <div>
+            {% component "unfold/components/card.html" with title="⚠️ Muddati o'tgan videolar" %}
+                <div class="overflow-x-auto">
+                    <table class="border-spacing-none border-separate text-left text-sm w-full">
+                        <thead class="text-font-important-light dark:text-font-important-dark">
+                            <tr>
+                                <th class="border-b border-base-200 font-semibold pb-3 pr-3 dark:border-base-800 w-6">#</th>
+                                <th class="border-b border-base-200 font-semibold pb-3 pr-3 dark:border-base-800">Sarlavha</th>
+                                <th class="border-b border-base-200 font-semibold pb-3 pr-3 dark:border-base-800">Kategoriya</th>
+                                <th class="border-b border-base-200 font-semibold pb-3 pr-3 dark:border-base-800">Muhimligi</th>
+                                <th class="border-b border-base-200 font-semibold pb-3 dark:border-base-800">Tayinlangan sana</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for video in overdue_videos %}
+                                <tr>
+                                    <td class="border-b border-base-200 py-3 pr-3 dark:border-base-800 text-font-subtle-light dark:text-font-subtle-dark">
+                                        {{ forloop.counter }}
+                                    </td>
+                                    <td class="border-b border-base-200 py-3 pr-3 dark:border-base-800">
+                                        <a class="hover:underline font-medium text-red-600 dark:text-red-400" href="{% url 'video_preview_view' video.pk %}">{{ video.title|truncatechars:50 }}</a>
+                                    </td>
+                                    <td class="border-b border-base-200 py-3 pr-3 dark:border-base-800 text-xs">
+                                        {{ video.category.name|default:"—" }}
+                                    </td>
+                                    <td class="border-b border-base-200 py-3 pr-3 dark:border-base-800 whitespace-nowrap">
+                                        {{ video.priority.name|default:"—" }}
+                                    </td>
+                                    <td class="border-b border-base-200 py-3 dark:border-base-800 text-red-500 dark:text-red-400">
+                                        {{ video.checkout|date:"d M Y" }}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endcomponent %}
+        </div>
+        {% endif %}
+
+        {# ── 📂 Bugungi pleylistlar ── #}
+        {% if today_playlists %}
+        <div>
+            {% component "unfold/components/card.html" with title="📂 Bugungi pleylistlar" %}
+                <div class="overflow-x-auto">
+                    <table class="border-spacing-none border-separate text-left text-sm w-full">
+                        <thead class="text-font-important-light dark:text-font-important-dark">
+                            <tr>
+                                <th class="border-b border-base-200 font-semibold pb-3 pr-3 dark:border-base-800 w-6">#</th>
+                                <th class="border-b border-base-200 font-semibold pb-3 pr-3 dark:border-base-800">Sarlavha</th>
+                                <th class="border-b border-base-200 font-semibold pb-3 pr-3 dark:border-base-800">Kanal</th>
+                                <th class="border-b border-base-200 font-semibold pb-3 pr-3 dark:border-base-800">Kategoriya</th>
+                                <th class="border-b border-base-200 font-semibold pb-3 pr-3 dark:border-base-800">Videolar</th>
+                                <th class="border-b border-base-200 font-semibold pb-3 dark:border-base-800">Davomiyligi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for pl in today_playlists %}
+                                <tr>
+                                    <td class="border-b border-base-200 py-3 pr-3 dark:border-base-800 text-font-subtle-light dark:text-font-subtle-dark">
+                                        {{ forloop.counter }}
+                                    </td>
+                                    <td class="border-b border-base-200 py-3 pr-3 dark:border-base-800">
+                                        <a class="hover:underline font-medium" href="{% url 'admin:youtube_playlist_change' pl.pk %}">{{ pl.title|truncatechars:50 }}</a>
+                                    </td>
+                                    <td class="border-b border-base-200 py-3 pr-3 dark:border-base-800 text-xs">
+                                        {{ pl.channel.title|default:"—" }}
+                                    </td>
+                                    <td class="border-b border-base-200 py-3 pr-3 dark:border-base-800 text-xs">
+                                        {{ pl.category.name|default:"—" }}
+                                    </td>
+                                    <td class="border-b border-base-200 py-3 pr-3 dark:border-base-800">
+                                        {{ pl.video_count|default:0 }}
+                                    </td>
+                                    <td class="border-b border-base-200 py-3 dark:border-base-800 whitespace-nowrap text-xs">
+                                        {{ pl.duration_display }}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endcomponent %}
+        </div>
+        {% endif %}
+
+        {# ── 📺 Bugungi kanallar ── #}
+        {% if today_channels %}
+        <div>
+            {% component "unfold/components/card.html" with title="📺 Bugungi kanallar" %}
+                <div class="overflow-x-auto">
+                    <table class="border-spacing-none border-separate text-left text-sm w-full">
+                        <thead class="text-font-important-light dark:text-font-important-dark">
+                            <tr>
+                                <th class="border-b border-base-200 font-semibold pb-3 pr-3 dark:border-base-800 w-6">#</th>
+                                <th class="border-b border-base-200 font-semibold pb-3 pr-3 dark:border-base-800">Kanal nomi</th>
+                                <th class="border-b border-base-200 font-semibold pb-3 pr-3 dark:border-base-800">Kategoriya</th>
+                                <th class="border-b border-base-200 font-semibold pb-3 pr-3 dark:border-base-800">Obunachilar</th>
+                                <th class="border-b border-base-200 font-semibold pb-3 pr-3 dark:border-base-800">Videolar</th>
+                                <th class="border-b border-base-200 font-semibold pb-3 dark:border-base-800">Ko'rilgan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for ch in today_channels %}
+                                <tr class="{% if forloop.counter > 5 %}channels-hidden-row hidden{% endif %}">
+                                    <td class="border-b border-base-200 py-3 pr-3 dark:border-base-800 text-font-subtle-light dark:text-font-subtle-dark">
+                                        {{ forloop.counter }}
+                                    </td>
+                                    <td class="border-b border-base-200 py-3 pr-3 dark:border-base-800">
+                                        <a class="hover:underline font-medium" href="{% url 'admin:youtube_channel_change' ch.pk %}">{{ ch.title|truncatechars:40 }}</a>
+                                    </td>
+                                    <td class="border-b border-base-200 py-3 pr-3 dark:border-base-800 text-xs">
+                                        {{ ch.category.name|default:"—" }}
+                                    </td>
+                                    <td class="border-b border-base-200 py-3 pr-3 dark:border-base-800 whitespace-nowrap">
+                                        {{ ch.subscriber_count|default:0 }}
+                                    </td>
+                                    <td class="border-b border-base-200 py-3 pr-3 dark:border-base-800">
+                                        {{ ch.video_count|default:0 }}
+                                    </td>
+                                    <td class="border-b border-base-200 py-3 dark:border-base-800">
+                                        {{ ch.total_watch|default:0 }}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% if today_channels|length > 5 %}
+                <button id="toggle-channels-btn" onclick="
+                    var rows = document.querySelectorAll('.channels-hidden-row');
+                    var btn = document.getElementById('toggle-channels-btn');
+                    var hidden = rows[0].classList.contains('hidden');
+                    rows.forEach(function(r){ r.classList.toggle('hidden'); });
+                    btn.textContent = hidden ? '▲ Yashirish' : '▼ Yana {{ today_channels|length|add:"-5" }} ta kanallar...';
+                " class="mt-3 text-sm text-primary-600 dark:text-primary-400 hover:underline cursor-pointer">
+                    ▼ Yana {{ today_channels|length|add:"-5" }} ta kanallar...
+                </button>
+                {% endif %}
+            {% endcomponent %}
+        </div>
+        {% endif %}
+
+        {# ── So'nggi qo'shilgan videolar ── #}
+        <div>
+            {% component "unfold/components/card.html" with title="🕐 So'nggi qo'shilgan videolar" %}
+                <div class="overflow-x-auto">
+                    <table class="border-spacing-none border-separate text-left text-sm w-full">
+                        <thead class="text-font-important-light dark:text-font-important-dark">
+                            <tr>
+                                <th class="border-b border-base-200 font-semibold pb-3 pr-3 dark:border-base-800">Sarlavha</th>
+                                <th class="border-b border-base-200 font-semibold pb-3 pr-3 dark:border-base-800">Kanal</th>
+                                <th class="border-b border-base-200 font-semibold pb-3 pr-3 dark:border-base-800">Muhimligi</th>
+                                <th class="border-b border-base-200 font-semibold pb-3 pr-3 dark:border-base-800">Holat</th>
+                                <th class="border-b border-base-200 font-semibold pb-3 dark:border-base-800">Tekshirish vaqti</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for video in recent_videos_list %}
+                                <tr>
+                                    <td class="border-b border-base-200 py-3 pr-3 dark:border-base-800">
+                                        <a class="hover:underline" href="{% url 'video_preview_view' video.pk %}">{{ video.title|truncatechars:40 }}</a>
+                                    </td>
+                                    <td class="border-b border-base-200 py-3 pr-3 dark:border-base-800">
+                                        {% for channel in video.channels.all %}
+                                            {{ channel.title|default:channel.url }}{% if not forloop.last %}, {% endif %}
+                                        {% empty %}
+                                            —
+                                        {% endfor %}
+                                    </td>
+                                    <td class="border-b border-base-200 py-3 pr-3 dark:border-base-800">
+                                        {{ video.priority.name|default:"—" }}
+                                    </td>
+                                    <td class="border-b border-base-200 py-3 pr-3 dark:border-base-800">
+                                        {% if video.status == 'new' %}
+                                            {% component "unfold/helpers/label.html" with variant="info" text=video.get_status_display %}{% endcomponent %}
+                                        {% elif video.status == 'watched' %}
+                                            {% component "unfold/helpers/label.html" with variant="success" text=video.get_status_display %}{% endcomponent %}
+                                        {% elif video.status == 'skipped' %}
+                                            {% component "unfold/helpers/label.html" with variant="warning" text=video.get_status_display %}{% endcomponent %}
+                                        {% elif video.status == 'archived' %}
+                                            {% component "unfold/helpers/label.html" with variant="danger" text=video.get_status_display %}{% endcomponent %}
+                                        {% else %}
+                                            {{ video.get_status_display }}
+                                        {% endif %}
+                                    </td>
+                                    <td class="border-b border-base-200 py-3 dark:border-base-800">
+                                        {{ video.checkout|date:"d M Y, H:i"|default:"—" }}
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td class="py-3 text-font-subtle-light dark:text-font-subtle-dark" colspan="5">
+                                        Hali videolar mavjud emas.
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endcomponent %}
+        </div>
+
+        {# ── 📌 Modullar (eng pastda, ixcham) ── #}
+        <details class="mt-2">
+            <summary class="cursor-pointer text-sm font-medium text-font-subtle-light dark:text-font-subtle-dark hover:text-font-important-light dark:hover:text-font-important-dark py-2">
+                📌 Modullar
+            </summary>
+            <div class="mt-2">
+                {% include "unfold/helpers/app_list_default.html" %}
+            </div>
+        </details>
+    </div>
+{% endblock %}
