@@ -7,10 +7,15 @@ set -e
 echo "Starting deployment for SaveTube..."
 
 # 1. Update system and install dependencies
-echo "Updating packages and installing Docker/Git..."
+echo "Updating packages and installing Git/Curl..."
 sudo apt-get update
-sudo apt-get install -y git curl docker.io
-sudo systemctl enable --now docker
+sudo apt-get install -y git curl
+
+if ! command -v docker &> /dev/null; then
+    echo "Installing Docker..."
+    sudo apt-get install -y docker.io
+    sudo systemctl enable --now docker
+fi
 
 # Install Docker Compose (V2) if not present
 if ! docker compose version > /dev/null 2>&1; then

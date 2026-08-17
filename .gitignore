@@ -27,3 +27,5 @@ ENV/
 
 # Static files
 staticfiles/
+seed.json
+backend/seed.json
