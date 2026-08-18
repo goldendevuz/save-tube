@@ -10,11 +10,15 @@ from django.urls import reverse_lazy
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-ch!plx$q6obhk0xf_rq%hkni1)1%)v_1ghqw-qy(stays8+u#8'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-ch!plx$q6obhk0xf_rq%hkni1)1%)v_1ghqw-qy(stays8+u#8')
 FIELD_ENCRYPTION_KEY = b'1234567890123456789012345678901234567890123='
 
-DEBUG = True
-ALLOWED_HOSTS = ['*']
+DEBUG = os.environ.get('DEBUG', 'True').lower() in ('1', 'true', 'yes')
+ALLOWED_HOSTS = [
+    h.strip()
+    for h in os.environ.get('ALLOWED_HOSTS', '*').split(',')
+    if h.strip()
+]
 
 # Cloudflare Tunnel orqali keladigan domaynlar (CSRF origin tekshiruvi uchun)
 CSRF_TRUSTED_ORIGINS = [
