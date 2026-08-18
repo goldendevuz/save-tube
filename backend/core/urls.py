@@ -7,6 +7,9 @@ from core.backup import backup_page
 
 from core.dashboard_views import bulk_shift_videos, video_preview_view, mark_video_watched, bulk_shift_playlists, bulk_shift_channels, channel_preview_view, playlist_preview_view
 from core.views import homepage_redirect, RegisterView
+from core.forms import SaveTubeLoginForm
+
+admin.site.login_form = SaveTubeLoginForm
 
 urlpatterns = [
     path('', homepage_redirect, name='home'),
