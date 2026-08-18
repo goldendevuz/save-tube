@@ -55,6 +55,7 @@ MIDDLEWARE = [
     'shared.utils.middleware.CurrentUserMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'core.middleware.NoCache404Middleware',
 ]
 
 ROOT_URLCONF = 'core.urls'
