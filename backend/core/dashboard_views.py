@@ -3,7 +3,14 @@ from django.contrib import messages
 from django.utils import timezone
 from datetime import timedelta
 from dateutil.relativedelta import relativedelta
-from youtube.models import Video
+from youtube.models import Video, Playlist, Channel
+
+
+def _own_queryset(request, model):
+    qs = model.objects.all()
+    if not request.user.is_superuser:
+        qs = qs.filter(user=request.user)
+    return qs
 
 def bulk_shift_videos(request):
     if not request.user.is_staff:
@@ -17,7 +24,7 @@ def bulk_shift_videos(request):
             messages.warning(request, "Hech qanday video tanlanmadi!")
             return redirect(request.META.get('HTTP_REFERER', '/admin/'))
             
-        videos = Video.objects.filter(id__in=video_ids)
+        videos = _own_queryset(request, Video).filter(id__in=video_ids)
         updated_count = 0
         
         for video in videos:
@@ -43,7 +50,6 @@ def bulk_shift_videos(request):
     return redirect(request.META.get('HTTP_REFERER', '/admin/'))
 
 def bulk_shift_playlists(request):
-    from youtube.models import Playlist
     if not request.user.is_staff:
         return redirect('admin:index')
         
@@ -55,7 +61,7 @@ def bulk_shift_playlists(request):
             messages.warning(request, "Hech qanday pleylist tanlanmadi!")
             return redirect(request.META.get('HTTP_REFERER', '/admin/'))
             
-        playlists = Playlist.objects.filter(id__in=playlist_ids)
+        playlists = _own_queryset(request, Playlist).filter(id__in=playlist_ids)
         updated_count = 0
         
         for pl in playlists:
@@ -82,7 +88,6 @@ def bulk_shift_playlists(request):
     return redirect(request.META.get('HTTP_REFERER', '/admin/'))
 
 def bulk_shift_channels(request):
-    from youtube.models import Channel
     if not request.user.is_staff:
         return redirect('admin:index')
         
@@ -94,7 +99,7 @@ def bulk_shift_channels(request):
             messages.warning(request, "Hech qanday kanal tanlanmadi!")
             return redirect(request.META.get('HTTP_REFERER', '/admin/'))
             
-        channels = Channel.objects.filter(id__in=channel_ids)
+        channels = _own_queryset(request, Channel).filter(id__in=channel_ids)
         updated_count = 0
         
         for ch in channels:
@@ -127,7 +132,7 @@ def video_preview_view(request, pk):
     if not request.user.is_staff:
         return redirect('admin:index')
         
-    video = get_object_or_404(Video, pk=pk)
+    video = get_object_or_404(_own_queryset(request, Video), pk=pk)
     stats = video.fetch_realtime_stats()
     
     # Extract video ID for iframe
@@ -155,7 +160,7 @@ def channel_preview_view(request, pk):
     if not request.user.is_staff:
         return redirect('admin:index')
         
-    channel = get_object_or_404(Channel, pk=pk)
+    channel = get_object_or_404(_own_queryset(request, Channel), pk=pk)
     related_videos = channel.video_set.all().order_by('-created')
     
     from django.contrib import admin
@@ -174,7 +179,7 @@ def playlist_preview_view(request, pk):
     if not request.user.is_staff:
         return redirect('admin:index')
         
-    playlist = get_object_or_404(Playlist, pk=pk)
+    playlist = get_object_or_404(_own_queryset(request, Playlist), pk=pk)
     related_videos = playlist.video_set.all().order_by('-created')
     
     from django.contrib import admin
@@ -193,7 +198,7 @@ def mark_video_watched(request, pk):
     if not request.user.is_staff:
         return redirect('admin:index')
         
-    video = get_object_or_404(Video, pk=pk)
+    video = get_object_or_404(_own_queryset(request, Video), pk=pk)
     if request.method == "POST":
         if video.status == 'watched':
             video.status = 'new'

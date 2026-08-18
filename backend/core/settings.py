@@ -148,77 +148,85 @@ UNFOLD = {
             "important-dark": "243 244 246",
         },
     },
-    "SIDEBAR": {
-        "show_search": True,
-        "show_all_applications": True,
-        "navigation": [
-            {
-                "title": "Asosiy",
-                "separator": False,
-                "items": [
-                    {
-                        "title": "Dashboard (Statistika)",
-                        "icon": "dashboard",
-                        "link": reverse_lazy("admin:index"),
-                    },
-                ],
-            },
-            {
-                "title": "YouTube Ma'lumotlari",
-                "separator": True,
-                "collapsible": False,
-                "items": [
-                    {
-                        "title": "Kanallar",
-                        "icon": "smart_display",
-                        "link": reverse_lazy("admin:youtube_channel_changelist"),
-                    },
-                    {
-                        "title": "Videolar",
-                        "icon": "video_library",
-                        "link": reverse_lazy("admin:youtube_video_changelist"),
-                    },
-                    {
-                        "title": "Pleylistlar",
-                        "icon": "featured_play_list",
-                        "link": reverse_lazy("admin:youtube_playlist_changelist"),
-                    },
-                    {
-                        "title": "Kategoriyalar",
-                        "icon": "category",
-                        "link": reverse_lazy("admin:youtube_category_changelist"),
-                    },
-                    {
-                        "title": "Teglar",
-                        "icon": "label",
-                        "link": reverse_lazy("admin:youtube_label_changelist"),
-                    },
-                ],
-            },
-            {
-                "title": "Xavfsizlik va Jurnal",
-                "separator": True,
-                "collapsible": True,
-                "items": [
-                    {
-                        "title": "Foydalanuvchilar",
-                        "icon": "group",
-                        "link": reverse_lazy("admin:auth_user_changelist"),
-                    },
-                    {
-                        "title": "Audit Log",
-                        "icon": "history",
-                        "link": reverse_lazy("admin:youtube_auditlog_changelist"),
-                    },
-                    {
-                        "title": "Backup / Restore",
-                        "icon": "backup",
-                        "link": reverse_lazy("backup_page"),
-                    },
-                ],
-            },
-        ],
-    },
+}
+
+def _sidebar_navigation(request):
+    """Yon menyu: 'Xavfsizlik va Jurnal' bo'limi faqat superuserlar uchun."""
+    groups = [
+        {
+            "title": "Asosiy",
+            "separator": False,
+            "items": [
+                {
+                    "title": "Dashboard (Statistika)",
+                    "icon": "dashboard",
+                    "link": reverse_lazy("admin:index"),
+                },
+            ],
+        },
+        {
+            "title": "YouTube Ma'lumotlari",
+            "separator": True,
+            "collapsible": False,
+            "items": [
+                {
+                    "title": "Kanallar",
+                    "icon": "smart_display",
+                    "link": reverse_lazy("admin:youtube_channel_changelist"),
+                },
+                {
+                    "title": "Videolar",
+                    "icon": "video_library",
+                    "link": reverse_lazy("admin:youtube_video_changelist"),
+                },
+                {
+                    "title": "Pleylistlar",
+                    "icon": "featured_play_list",
+                    "link": reverse_lazy("admin:youtube_playlist_changelist"),
+                },
+                {
+                    "title": "Kategoriyalar",
+                    "icon": "category",
+                    "link": reverse_lazy("admin:youtube_category_changelist"),
+                },
+                {
+                    "title": "Teglar",
+                    "icon": "label",
+                    "link": reverse_lazy("admin:youtube_label_changelist"),
+                },
+            ],
+        },
+    ]
+    if request.user.is_superuser:
+        groups.append({
+            "title": "Xavfsizlik va Jurnal",
+            "separator": True,
+            "collapsible": True,
+            "items": [
+                {
+                    "title": "Foydalanuvchilar",
+                    "icon": "group",
+                    "link": reverse_lazy("admin:auth_user_changelist"),
+                },
+                {
+                    "title": "Audit Log",
+                    "icon": "history",
+                    "link": reverse_lazy("admin:youtube_auditlog_changelist"),
+                },
+                {
+                    "title": "Backup / Restore",
+                    "icon": "backup",
+                    "link": reverse_lazy("backup_page"),
+                },
+            ],
+        })
+    return groups
+
+
+UNFOLD["SIDEBAR"] = {
+    "show_search": True,
+    "show_all_applications": True,
+    "navigation": _sidebar_navigation,
 }
 
 LOGIN_URL = '/admin/login/'

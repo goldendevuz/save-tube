@@ -149,40 +149,58 @@ def _footer(card, prefix):
 
 
 def dashboard_callback(request, context):
-    """Unfold dashboard uchun ma'lumot: 1-qator JAMI, 2-qator MENING."""
+    """Unfold dashboard uchun ma'lumot: superadmin — JAMI + MENING, oddiy user — faqat o'ziniki."""
+    is_super = request.user.is_superuser
+    uid = request.user.id if not request.user.is_anonymous else None
 
-    # 1-qator: Jami (barcha yozuvlar)
-    row_all = build_cards("all")
-    # 2-qator: Mening qo'shganlarim (joriy foydalanuvchi kiritgan yozuvlar soni)
-    mine_scope = f"mine:{request.user.id}" if not request.user.is_anonymous else None
-    row_mine = build_cards(mine_scope) if mine_scope else []
-    # "Obunachilar" va "Shorts" ni Mening qatoridan tushiramiz
-    row_mine = [card for card in row_mine if card["key"] not in ("subscribers", "shorts")]
+    if is_super:
+        # Superadmin: 1-qator Jami, 2-qator Mening
+        row_all = build_cards("all")
+        row_mine = build_cards(f"mine:{uid}") if uid else []
+        row_mine = [card for card in row_mine if card["key"] not in ("subscribers", "shorts")]
 
-    kpi = []
-    for card in row_all:
-        if card["key"] in ("video_duration", "playlist_duration"):
-            continue
-        kpi.append({
-            "title": f"Jami · {card['title']}",
-            "metric": card["metric"],
-            "footer": _footer(card, "Barcha"),
-            "subtitle": "Row 1",
-        })
-    for card in row_mine:
-        kpi.append({
-            "title": f"Mening · {card['title']}",
-            "metric": card["metric"],
-            "footer": f"{_footer(card, 'Mening')} · qo'shilgan yozuvlar soni",
-            "subtitle": "Row 2",
-        })
+        kpi = []
+        for card in row_all:
+            if card["key"] in ("video_duration", "playlist_duration"):
+                continue
+            kpi.append({
+                "title": f"Jami · {card['title']}",
+                "metric": card["metric"],
+                "footer": _footer(card, "Barcha"),
+                "subtitle": "Row 1",
+            })
+        for card in row_mine:
+            kpi.append({
+                "title": f"Mening · {card['title']}",
+                "metric": card["metric"],
+                "footer": f"{_footer(card, 'Mening')} · qo'shilgan yozuvlar soni",
+                "subtitle": "Row 2",
+            })
+    else:
+        # Oddiy user: faqat o'z ma'lumotlari
+        row_mine = build_cards(f"mine:{uid}") if uid else []
+        row_mine = [card for card in row_mine if card["key"] not in ("subscribers", "shorts")]
+
+        kpi = []
+        for card in row_mine:
+            if card["key"] in ("video_duration", "playlist_duration"):
+                continue
+            kpi.append({
+                "title": card["title"],
+                "metric": card["metric"],
+                "footer": _footer(card, "Mening"),
+            })
 
     # ── CRM: Bugungi videolar ──
     now = timezone.now()
     today = now.date()
 
+    base_videos = Video.objects.all() if is_super else Video.objects.filter(user=request.user)
+    base_playlists = Playlist.objects.all() if is_super else Playlist.objects.filter(user=request.user)
+    base_channels = Channel.objects.all() if is_super else Channel.objects.filter(user=request.user)
+
     today_videos = (
-        Video.objects.filter(checkout__date=today)
+        base_videos.filter(checkout__date=today)
         .select_related("priority", "category")
         .prefetch_related("channels")
         .order_by("priority__id", "checkout")
@@ -190,7 +208,7 @@ def dashboard_callback(request, context):
 
     # ── CRM: Muddati o'tgan videolar (checkout < bugun, status=new) ──
     overdue_videos = (
-        Video.objects.filter(checkout__date__lt=today, status="new")
+        base_videos.filter(checkout__date__lt=today, status="new")
         .select_related("priority", "category")
         .prefetch_related("channels")
         .order_by("checkout")[:10]
@@ -198,26 +216,26 @@ def dashboard_callback(request, context):
 
     # ── CRM: Bugungi pleylistlar ──
     today_playlists = (
-        Playlist.objects.filter(checkout__date=today)
+        base_playlists.filter(checkout__date=today)
         .select_related("category", "channel")
         .order_by("checkout")
     )
 
     # ── CRM: Bugungi kanallar ──
     today_channels = (
-        Channel.objects.filter(checkout__date=today)
+        base_channels.filter(checkout__date=today)
         .select_related("category")
         .order_by("checkout")[:20]
     )
 
     # ── CRM: Umumiy statistika ──
-    my_videos = Video.objects.all()
+    my_videos = base_videos
     total_count = my_videos.count()
     new_count = my_videos.filter(status="new").count()
     watched_count = my_videos.filter(status="watched").count()
     skipped_count = my_videos.filter(status="skipped").count()
     archived_count = my_videos.filter(status="archived").count()
-    overdue_count = Video.objects.filter(checkout__date__lt=today, status="new").count()
+    overdue_count = base_videos.filter(checkout__date__lt=today, status="new").count()
 
     today_total = today_videos.count()
     today_new = today_videos.filter(status="new").count()
@@ -242,8 +260,8 @@ def dashboard_callback(request, context):
     }
 
     week_ago = timezone.now() - timedelta(days=7)
-    recent_videos = Video.objects.filter(created__gte=week_ago).count()
-    recent_channels = Channel.objects.filter(created__gte=week_ago).count()
+    recent_videos = base_videos.filter(created__gte=week_ago).count()
+    recent_channels = base_channels.filter(created__gte=week_ago).count()
 
     context.update({
         "navigation": [
@@ -262,7 +280,7 @@ def dashboard_callback(request, context):
         "today_channels": today_channels,
         "overdue_videos": overdue_videos,
         "crm_stats": crm_stats,
-        "recent_videos_list": Video.objects.select_related("priority").prefetch_related("channels").order_by("-created")[:5],
+        "recent_videos_list": base_videos.select_related("priority").prefetch_related("channels").order_by("-created")[:5],
     })
 
     return context

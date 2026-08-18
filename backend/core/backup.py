@@ -10,7 +10,6 @@ from pathlib import Path
 
 from django.apps import apps
 from django.contrib import messages
-from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.core import management
 from django.db.models import Count
@@ -46,7 +45,13 @@ def _dump_all_data():
     return buf.getvalue()
 
 
-@staff_member_required
+def _superuser_required(view_func):
+    from django.contrib.admin.views.decorators import user_passes_test
+
+    return user_passes_test(lambda u: u.is_active and u.is_superuser)(view_func)
+
+
+@_superuser_required
 @never_cache
 def backup_page(request):
     context = {"model_counts": _model_counts()}
