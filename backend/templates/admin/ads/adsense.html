@@ -27,18 +27,22 @@
             (adsbygoogle = window.adsbygoogle || []).push({});
         </script>
     {% else %}
-        <div class="flex justify-center my-4" title="{% trans "Hamkorlik — solijonov.uz" %}">
-            <a href="https://solijonov.uz" target="_blank" rel="noopener nofollow">
+        <div class="flex flex-col items-center gap-1 select-none" title="{% trans "Hamkorlik — solijonov.uz" %}">
+            <span class="text-[10px] uppercase tracking-widest text-font-subtle-light dark:text-font-subtle-dark">Reklama</span>
+            <a href="https://solijonov.uz" target="_blank" rel="noopener nofollow"
+               class="block overflow-hidden rounded border border-base-300/60 dark:border-base-700/60">
                 <img src="{% static 'banners/solijonov-banner.png' %}" alt="Solijonov Asadbek — Backend muhandisi, xavfsiz tizimlar quraman"
-                     class="rounded-lg" style="width:100%;max-width:860px;height:auto;margin:0 auto;display:block" loading="lazy">
+                     style="width:100%;max-width:728px;height:auto;display:block" loading="lazy">
             </a>
         </div>
     {% endif %}
 {% else %}
-    <div class="flex justify-center my-4" title="{% trans "Hamkorlik — solijonov.uz" %}">
-        <a href="https://solijonov.uz" target="_blank" rel="noopener nofollow">
+    <div class="flex flex-col items-center gap-1 select-none" title="{% trans "Hamkorlik — solijonov.uz" %}">
+        <span class="text-[10px] uppercase tracking-widest text-font-subtle-light dark:text-font-subtle-dark">Reklama</span>
+        <a href="https://solijonov.uz" target="_blank" rel="noopener nofollow"
+           class="block overflow-hidden rounded border border-base-300/60 dark:border-base-700/60">
             <img src="{% static 'banners/solijonov-banner.png' %}" alt="Solijonov Asadbek — Backend muhandisi, xavfsiz tizimlar quraman"
-                 class="max-w-full h-auto rounded-lg" loading="lazy">
+                 style="width:100%;max-width:728px;height:auto;display:block" loading="lazy">
         </a>
     </div>
 {% endif %}
