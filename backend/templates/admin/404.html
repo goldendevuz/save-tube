@@ -15,7 +15,7 @@
             Havola eskirgan yoki manzil noto'g'ri yozilgan bo'lishi mumkin.
         </p>
         <div class="mt-8 flex items-center justify-center gap-3">
-            <button type="button" onclick="history.back()"
+            <button type="button" onclick="if (history.length > 1) { history.back(); } else { location.href = '/admin/'; }"
                     class="cursor-pointer flex items-center gap-2 px-5 py-2.5 rounded-lg border border-base-300 dark:border-base-700 bg-base-50 dark:bg-base-900 hover:border-primary-500 text-sm font-medium transition-colors">
                 <span class="material-symbols-outlined text-lg">arrow_back</span>
                 Ortga
