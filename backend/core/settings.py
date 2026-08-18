@@ -16,6 +16,13 @@ FIELD_ENCRYPTION_KEY = b'1234567890123456789012345678901234567890123='
 DEBUG = True
 ALLOWED_HOSTS = ['*']
 
+# Cloudflare Tunnel orqali keladigan domaynlar (CSRF origin tekshiruvi uchun)
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in os.environ.get('CSRF_TRUSTED_ORIGINS', 'https://savetube.univel.uz').split(',')
+    if origin.strip()
+]
+
 INSTALLED_APPS = [
     'unfold',
     'unfold.contrib.filters',
