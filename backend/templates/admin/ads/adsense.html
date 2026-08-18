@@ -1,4 +1,4 @@
-{% load i18n %}
+{% load i18n static %}
 {% load ads_tags %}
 {# Reklama bloki: ADSENSE_CLIENT to'ldirilganida verificatsiya snippet'i chiqadi. #}
 {# Slot ham to'ldirilganida haqiqiy reklama bloki ko'rinadi. #}
@@ -27,14 +27,18 @@
             (adsbygoogle = window.adsbygoogle || []).push({});
         </script>
     {% else %}
-        <div class="border border-dashed border-base-300 dark:border-base-700 rounded-lg text-center text-xs text-font-subtle-light dark:text-font-subtle-dark py-6 select-none"
-             title="{% trans "AdSense ulandi, reklama sloti kutilmoqda" %}">
-            🪧 AdSense ulandi · slot kutilmoqda
+        <div class="flex justify-center my-4" title="{% trans "Hamkorlik — solijonov.uz" %}">
+            <a href="https://solijonov.uz" target="_blank" rel="noopener nofollow">
+                <img src="{% static 'banners/solijonov-banner.png' %}" alt="Solijonov Asadbek — Backend muhandisi, xavfsiz tizimlar quraman"
+                     class="max-w-full h-auto rounded-lg" loading="lazy">
+            </a>
         </div>
     {% endif %}
 {% else %}
-    <div class="border border-dashed border-base-300 dark:border-base-700 rounded-lg text-center text-xs text-font-subtle-light dark:text-font-subtle-dark py-6 select-none"
-         title="{% trans "AdSense ulanganda bu joyda reklama ko'rinadi" %}">
-        🪧 Ad slot: {{ slot_label|default:slot_name }}
+    <div class="flex justify-center my-4" title="{% trans "Hamkorlik — solijonov.uz" %}">
+        <a href="https://solijonov.uz" target="_blank" rel="noopener nofollow">
+            <img src="{% static 'banners/solijonov-banner.png' %}" alt="Solijonov Asadbek — Backend muhandisi, xavfsiz tizimlar quraman"
+                 class="max-w-full h-auto rounded-lg" loading="lazy">
+        </a>
     </div>
 {% endif %}
