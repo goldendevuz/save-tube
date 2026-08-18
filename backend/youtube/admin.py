@@ -203,6 +203,16 @@ def register_model(model):
     
     admin_attrs["save_model"] = save_model
 
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        extra_context = extra_context or {}
+        if model.__name__ in ("Channel", "Playlist"):
+            obj = self.get_object(request, object_id)
+            if obj:
+                extra_context['related_videos'] = obj.video_set.all().order_by('-created')
+        return ModelAdmin.change_view(self, request, object_id, form_url, extra_context=extra_context)
+
+    admin_attrs["change_view"] = change_view
+
     def get_queryset(self, request):
         qs = self.model._default_manager.get_queryset()
         

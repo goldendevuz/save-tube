@@ -196,6 +196,22 @@
                 YouTube'da ochish
             </a>
             {% endif %}
+            
+            {# Ko'rildi / Yangi button form #}
+            <form method="post" action="{% url 'mark_video_watched' video.pk %}" class="inline">
+                {% csrf_token %}
+                {% if video.status == 'watched' %}
+                <button type="submit" class="inline-flex items-center justify-center px-5 py-2.5 border border-transparent text-sm font-medium rounded-lg shadow-sm text-font-default-light dark:text-font-default-dark bg-base-200 dark:bg-base-700 hover:bg-base-300 dark:hover:bg-base-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-base-500 transition-colors">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Yangi deb belgilash
+                </button>
+                {% else %}
+                <button type="submit" class="inline-flex items-center justify-center px-5 py-2.5 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                    Ko'rildi
+                </button>
+                {% endif %}
+            </form>
         </div>
 
         {# ── COMMENTS ── #}

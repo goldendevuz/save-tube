@@ -58,6 +58,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'core.context_processor.ads',
             ],
         },
     },
@@ -220,3 +221,13 @@ UNFOLD = {
 LOGIN_URL = '/admin/login/'
 LOGIN_REDIRECT_URL = '/admin/'
 LOGOUT_REDIRECT_URL = '/admin/login/'
+
+# --------------------------------------------------------------------------- #
+# Ads (Google AdSense)
+# Reklamalar faqat ADSENSE_CLIENT to'ldirilganda ishga tushadi.
+# Sayt public bo'lganda (https + real trafik) AdSense onay beriladi.
+# --------------------------------------------------------------------------- #
+ADSENSE_CLIENT = os.environ.get('ADSENSE_CLIENT', '')
+ADSENSE_SLOTS = {
+    'content': os.environ.get('ADSENSE_SLOT_CONTENT', ''),
+}
