@@ -1,9 +1,9 @@
 from django.shortcuts import render, redirect
 from django.urls import reverse_lazy
 from django.views.generic import CreateView
-from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import login
 from django.contrib import messages
+from core.forms import RegisterForm
 
 def homepage_redirect(request):
     if request.user.is_authenticated:
@@ -12,7 +12,7 @@ def homepage_redirect(request):
 
 class RegisterView(CreateView):
     template_name = 'admin/register.html'
-    form_class = UserCreationForm
+    form_class = RegisterForm
     success_url = reverse_lazy('admin:login')
 
     def form_valid(self, form):
