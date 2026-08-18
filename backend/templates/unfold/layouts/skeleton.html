@@ -80,7 +80,9 @@
         {% block base %}{% endblock %}
 
         {% if not is_popup %}
-            {% include "admin/ads/adsense.html" with slot_name="content" slot_label="Sahifa" %}
+            <div class="px-4 lg:px-8 py-4">
+                {% include "admin/ads/adsense.html" with slot_name="content" slot_label="Sahifa" %}
+            </div>
         {% endif %}
 
         {% include "unfold/helpers/modal.html" %}
