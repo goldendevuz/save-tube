@@ -1,0 +1,31 @@
+{% load static i18n %}<!doctype html>
+<html lang="uz" class="dark">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>404 — Sahifa topilmadi</title>
+    <link rel="stylesheet" href="{% static 'unfold/css/styles.css' %}">
+</head>
+<body class="bg-base-950 min-h-screen flex items-center justify-center p-4 dark:bg-base-950">
+    <div class="text-center max-w-md">
+        <div class="text-[100px] leading-none font-bold text-primary-500/80 select-none">404</div>
+        <h1 class="mt-2 text-2xl font-semibold text-font-important-dark">Bunday sahifa yo'q</h1>
+        <p class="mt-3 text-sm text-font-subtle-dark">
+            Havola eskirgan yoki manzil noto'g'ri yozilgan bo'lishi mumkin.
+        </p>
+        <div class="mt-8 flex items-center justify-center gap-3">
+            <button type="button" onclick="history.back()"
+                    class="cursor-pointer flex items-center gap-2 px-5 py-2.5 rounded-lg border border-base-700 bg-base-900 hover:border-primary-500 text-sm font-medium transition-colors text-font-important-dark">
+                <span class="material-symbols-outlined text-lg">arrow_back</span>
+                Ortga
+            </button>
+            <a href="/admin/"
+               class="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary-500 hover:bg-primary-400 text-white text-sm font-medium transition-colors">
+                Dashboard
+                <span class="material-symbols-outlined text-lg">dashboard</span>
+            </a>
+        </div>
+    </div>
+    <script src="{% static 'unfold/js/vendor/alpine.min.js' %}"></script>
+</body>
+</html>
