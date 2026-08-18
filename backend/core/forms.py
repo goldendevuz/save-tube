@@ -14,5 +14,6 @@ class SaveTubeLoginForm(UnfoldAuthenticationForm):
 class RegisterForm(UnfoldUserCreationForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields.pop("usable_password", None)
         self.fields["username"].widget.attrs["class"] = " ".join(BASE_INPUT_CLASSES)
         self.fields["password1"].widget.attrs["autofocus"] = False
