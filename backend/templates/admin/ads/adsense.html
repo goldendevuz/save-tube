@@ -1,9 +1,9 @@
 {% load i18n %}
 {% load ads_tags %}
-{# Reklama bloki: ADSENSE_CLIENT va slot to'ldirilganida haqiqiy AdSense kodi chiqadi. #}
-{# Bo'sh holatda — dev/dizayn uchun joy-belgilash (placeholder) ko'rsatiladi. #}
+{# Reklama bloki: ADSENSE_CLIENT to'ldirilganida verificatsiya snippet'i chiqadi. #}
+{# Slot ham to'ldirilganida haqiqiy reklama bloki ko'rinadi. #}
 
-{% if ads_enabled and adsense_slots|get_item:slot_name %}
+{% if ads_enabled %}
     <script>
         if (typeof window.__adsense_loader === 'undefined') {
             window.__adsense_loader = true;
@@ -16,15 +16,22 @@
             })();
         }
     </script>
-    <ins class="adsbygoogle"
-         style="display:block"
-         data-ad-client="{{ adsense_client }}"
-         data-ad-slot="{{ adsense_slots|get_item:slot_name }}"
-         data-ad-format="auto"
-         data-full-width-responsive="true"></ins>
-    <script>
-        (adsbygoogle = window.adsbygoogle || []).push({});
-    </script>
+    {% if adsense_slots|get_item:slot_name %}
+        <ins class="adsbygoogle"
+             style="display:block"
+             data-ad-client="{{ adsense_client }}"
+             data-ad-slot="{{ adsense_slots|get_item:slot_name }}"
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
+        <script>
+            (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
+    {% else %}
+        <div class="border border-dashed border-base-300 dark:border-base-700 rounded-lg text-center text-xs text-font-subtle-light dark:text-font-subtle-dark py-6 select-none"
+             title="{% trans "AdSense ulandi, reklama sloti kutilmoqda" %}">
+            🪧 AdSense ulandi · slot kutilmoqda
+        </div>
+    {% endif %}
 {% else %}
     <div class="border border-dashed border-base-300 dark:border-base-700 rounded-lg text-center text-xs text-font-subtle-light dark:text-font-subtle-dark py-6 select-none"
          title="{% trans "AdSense ulanganda bu joyda reklama ko'rinadi" %}">
