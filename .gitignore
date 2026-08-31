@@ -29,3 +29,4 @@ ENV/
 staticfiles/
 seed.json
 backend/seed.json
+docker-compose.override.yml

@@ -10,11 +10,22 @@ from django.urls import reverse_lazy
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-ch!plx$q6obhk0xf_rq%hkni1)1%)v_1ghqw-qy(stays8+u#8'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-ch!plx$q6obhk0xf_rq%hkni1)1%)v_1ghqw-qy(stays8+u#8')
 FIELD_ENCRYPTION_KEY = b'1234567890123456789012345678901234567890123='
 
-DEBUG = True
-ALLOWED_HOSTS = ['*']
+DEBUG = os.environ.get('DEBUG', 'True').lower() in ('1', 'true', 'yes')
+ALLOWED_HOSTS = [
+    h.strip()
+    for h in os.environ.get('ALLOWED_HOSTS', '*').split(',')
+    if h.strip()
+]
+
+# Cloudflare Tunnel orqali keladigan domaynlar (CSRF origin tekshiruvi uchun)
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in os.environ.get('CSRF_TRUSTED_ORIGINS', 'https://savetube.univel.uz').split(',')
+    if origin.strip()
+]
 
 INSTALLED_APPS = [
     'unfold',
@@ -44,6 +55,7 @@ MIDDLEWARE = [
     'shared.utils.middleware.CurrentUserMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'core.middleware.NoCache404Middleware',
 ]
 
 ROOT_URLCONF = 'core.urls'
@@ -58,6 +70,8 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'core.context_processor.ads',
+                'core.context_processor.unfold_context',
             ],
         },
     },
@@ -72,12 +86,7 @@ DATABASES = {
     }
 }
 
-AUTH_PASSWORD_VALIDATORS = [
-    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
-]
+AUTH_PASSWORD_VALIDATORS = []
 
 LANGUAGE_CODE = 'uz'
 TIME_ZONE = 'Asia/Tashkent'
@@ -92,6 +101,7 @@ time.tzset()
 LOCALE_PATHS = [BASE_DIR / 'locale']
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_DIRS = [BASE_DIR / 'static']
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # --------------------------------------------------------------------------- #
@@ -144,79 +154,97 @@ UNFOLD = {
             "important-dark": "243 244 246",
         },
     },
-    "SIDEBAR": {
-        "show_search": True,
-        "show_all_applications": True,
-        "navigation": [
-            {
-                "title": "Asosiy",
-                "separator": False,
-                "items": [
-                    {
-                        "title": "Dashboard (Statistika)",
-                        "icon": "dashboard",
-                        "link": reverse_lazy("admin:index"),
-                    },
-                ],
-            },
-            {
-                "title": "YouTube Ma'lumotlari",
-                "separator": True,
-                "collapsible": False,
-                "items": [
-                    {
-                        "title": "Kanallar",
-                        "icon": "smart_display",
-                        "link": reverse_lazy("admin:youtube_channel_changelist"),
-                    },
-                    {
-                        "title": "Videolar",
-                        "icon": "video_library",
-                        "link": reverse_lazy("admin:youtube_video_changelist"),
-                    },
-                    {
-                        "title": "Pleylistlar",
-                        "icon": "featured_play_list",
-                        "link": reverse_lazy("admin:youtube_playlist_changelist"),
-                    },
-                    {
-                        "title": "Kategoriyalar",
-                        "icon": "category",
-                        "link": reverse_lazy("admin:youtube_category_changelist"),
-                    },
-                    {
-                        "title": "Teglar",
-                        "icon": "label",
-                        "link": reverse_lazy("admin:youtube_label_changelist"),
-                    },
-                ],
-            },
-            {
-                "title": "Xavfsizlik va Jurnal",
-                "separator": True,
-                "collapsible": True,
-                "items": [
-                    {
-                        "title": "Foydalanuvchilar",
-                        "icon": "group",
-                        "link": reverse_lazy("admin:auth_user_changelist"),
-                    },
-                    {
-                        "title": "Audit Log",
-                        "icon": "history",
-                        "link": reverse_lazy("admin:youtube_auditlog_changelist"),
-                    },
-                    {
-                        "title": "Backup / Restore",
-                        "icon": "backup",
-                        "link": reverse_lazy("backup_page"),
-                    },
-                ],
-            },
-        ],
-    },
+}
+
+def _sidebar_navigation(request):
+    """Yon menyu: 'Xavfsizlik va Jurnal' bo'limi faqat superuserlar uchun."""
+    groups = [
+        {
+            "title": "Asosiy",
+            "separator": False,
+            "items": [
+                {
+                    "title": "Dashboard (Statistika)",
+                    "icon": "dashboard",
+                    "link": reverse_lazy("admin:index"),
+                },
+            ],
+        },
+        {
+            "title": "YouTube Ma'lumotlari",
+            "separator": True,
+            "collapsible": False,
+            "items": [
+                {
+                    "title": "Kanallar",
+                    "icon": "smart_display",
+                    "link": reverse_lazy("admin:youtube_channel_changelist"),
+                },
+                {
+                    "title": "Videolar",
+                    "icon": "video_library",
+                    "link": reverse_lazy("admin:youtube_video_changelist"),
+                },
+                {
+                    "title": "Pleylistlar",
+                    "icon": "featured_play_list",
+                    "link": reverse_lazy("admin:youtube_playlist_changelist"),
+                },
+                {
+                    "title": "Kategoriyalar",
+                    "icon": "category",
+                    "link": reverse_lazy("admin:youtube_category_changelist"),
+                },
+                {
+                    "title": "Teglar",
+                    "icon": "label",
+                    "link": reverse_lazy("admin:youtube_label_changelist"),
+                },
+            ],
+        },
+    ]
+    if request.user.is_superuser:
+        groups.append({
+            "title": "Xavfsizlik va Jurnal",
+            "separator": True,
+            "collapsible": True,
+            "items": [
+                {
+                    "title": "Foydalanuvchilar",
+                    "icon": "group",
+                    "link": reverse_lazy("admin:auth_user_changelist"),
+                },
+                {
+                    "title": "Audit Log",
+                    "icon": "history",
+                    "link": reverse_lazy("admin:youtube_auditlog_changelist"),
+                },
+                {
+                    "title": "Backup / Restore",
+                    "icon": "backup",
+                    "link": reverse_lazy("backup_page"),
+                },
+            ],
+        })
+    return groups
+
+
+UNFOLD["SIDEBAR"] = {
+    "show_search": True,
+    "show_all_applications": True,
+    "navigation": _sidebar_navigation,
 }
 
 LOGIN_URL = '/admin/login/'
 LOGIN_REDIRECT_URL = '/admin/'
 LOGOUT_REDIRECT_URL = '/admin/login/'
+
+# --------------------------------------------------------------------------- #
+# Ads (Google AdSense)
+# Reklamalar faqat ADSENSE_CLIENT to'ldirilganda ishga tushadi.
+# Sayt public bo'lganda (https + real trafik) AdSense onay beriladi.
+# --------------------------------------------------------------------------- #
+ADSENSE_CLIENT = os.environ.get('ADSENSE_CLIENT', '')
+ADSENSE_SLOTS = {
+    'content': os.environ.get('ADSENSE_SLOT_CONTENT', ''),
+}

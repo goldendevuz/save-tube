@@ -1,0 +1,48 @@
+{% load i18n static %}
+{% load ads_tags %}
+{# Reklama bloki: ADSENSE_CLIENT to'ldirilganida verificatsiya snippet'i chiqadi. #}
+{# Slot ham to'ldirilganida haqiqiy reklama bloki ko'rinadi. #}
+
+{% if ads_enabled %}
+    <script>
+        if (typeof window.__adsense_loader === 'undefined') {
+            window.__adsense_loader = true;
+            (function () {
+                var s = document.createElement('script');
+                s.async = true;
+                s.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={{ adsense_client }}';
+                s.crossOrigin = 'anonymous';
+                document.head.appendChild(s);
+            })();
+        }
+    </script>
+    {% if adsense_slots|get_item:slot_name %}
+        <ins class="adsbygoogle"
+             style="display:block"
+             data-ad-client="{{ adsense_client }}"
+             data-ad-slot="{{ adsense_slots|get_item:slot_name }}"
+             data-ad-format="auto"
+             data-full-width-responsive="true"></ins>
+        <script>
+            (adsbygoogle = window.adsbygoogle || []).push({});
+        </script>
+    {% else %}
+        <div class="flex flex-col items-center gap-1 select-none" title="{% trans "Hamkorlik — solijonov.uz" %}">
+            <span class="text-[10px] uppercase tracking-widest text-font-subtle-light dark:text-font-subtle-dark">Reklama</span>
+            <a href="https://solijonov.uz" target="_blank" rel="noopener nofollow"
+               class="block overflow-hidden rounded border border-base-300/60 dark:border-base-700/60">
+                <img src="{% static 'banners/solijonov-banner.png' %}" alt="Solijonov Asadbek — Backend muhandisi, xavfsiz tizimlar quraman"
+                     style="width:100%;max-width:728px;height:auto;display:block" loading="lazy">
+            </a>
+        </div>
+    {% endif %}
+{% else %}
+    <div class="flex flex-col items-center gap-1 select-none" title="{% trans "Hamkorlik — solijonov.uz" %}">
+        <span class="text-[10px] uppercase tracking-widest text-font-subtle-light dark:text-font-subtle-dark">Reklama</span>
+        <a href="https://solijonov.uz" target="_blank" rel="noopener nofollow"
+           class="block overflow-hidden rounded border border-base-300/60 dark:border-base-700/60">
+            <img src="{% static 'banners/solijonov-banner.png' %}" alt="Solijonov Asadbek — Backend muhandisi, xavfsiz tizimlar quraman"
+                 style="width:100%;max-width:728px;height:auto;display:block" loading="lazy">
+        </a>
+    </div>
+{% endif %}

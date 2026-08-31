@@ -16,8 +16,9 @@ services:
       - "8095:8000"
     volumes:
       - ./backend:/app
+    env_file:
+      - ./backend/.env
     environment:
-      - DEBUG=1
       - TZ=Asia/Tashkent
       - REDIS_URL=redis://redis:6379/1
     restart: unless-stopped

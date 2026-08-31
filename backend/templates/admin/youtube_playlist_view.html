@@ -1,0 +1,191 @@
+{% extends "unfold/layouts/base.html" %}
+{% load i18n unfold %}
+
+{% block title %} | {{ title }}{% endblock %}
+
+{% block breadcrumbs %}
+    <div class="px-4 lg:px-12 flex items-center mb-6">
+        <a href="{% url 'admin:index' %}" class="text-primary-600 dark:text-primary-500 font-medium hover:underline text-sm flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            Bosh sahifa
+        </a>
+        <span class="mx-2 text-font-subtle-light dark:text-font-subtle-dark">/</span>
+        <span class="text-font-default-light dark:text-font-default-dark text-sm">{{ title }}</span>
+    </div>
+{% endblock %}
+
+{% block content %}
+<style>
+    .pure-dark-mode {
+        background-color: #1a1a1a !important;
+        color: #e5e5e5 !important;
+    }
+    .pure-dark-card {
+        background-color: #242424 !important;
+        border: 1px solid #333 !important;
+    }
+    .pure-dark-header {
+        background: linear-gradient(90deg, #312e81 0%, #4c1d95 50%, #312e81 100%);
+    }
+    .pure-dark-avatar {
+        background-color: #3730a3 !important;
+        border: 4px solid #1a1a1a !important;
+        color: #fff !important;
+    }
+    .pure-dark-table {
+        background-color: #1a1a1a !important;
+        border: 1px solid #333 !important;
+    }
+    .pure-dark-table th {
+        background-color: #242424 !important;
+        border-bottom: 1px solid #333 !important;
+        color: #9ca3af !important;
+    }
+    .pure-dark-table td {
+        border-bottom: 1px solid #333 !important;
+        color: #e5e5e5 !important;
+    }
+    .pure-dark-table tr:hover {
+        background-color: #2d2d2d !important;
+    }
+    .pure-dark-btn {
+        background-color: #374151 !important;
+        border: 1px solid #4b5563 !important;
+        color: #fff !important;
+    }
+    .pure-dark-btn:hover {
+        background-color: #4b5563 !important;
+    }
+</style>
+
+<div class="px-4 lg:px-12 mb-12 pure-dark-mode">
+    <!-- Playlist Cover & Header -->
+    <div class="rounded-xl mb-8 pure-dark-card shadow-lg" style="overflow: hidden;">
+        <!-- Cover Image (Gradient) -->
+        <div class="pure-dark-header relative" style="width: 100%; height: 160px;">
+        </div>
+        
+        <div class="px-6 pb-6 relative">
+            <div class="flex flex-col md:flex-row items-start md:items-end mb-4" style="margin-top: -50px; gap: 1.5rem;">
+                <!-- Avatar / Icon -->
+                <div class="rounded-xl flex items-center justify-center font-bold pure-dark-avatar shadow-md" style="width: 100px; height: 100px; flex-shrink: 0;">
+                    <svg class="text-white" style="width: 48px; height: 48px;" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h8"></path></svg>
+                </div>
+                
+                <!-- Playlist Info -->
+                <div class="flex-1 pb-2">
+                    <h1 class="font-bold mb-1 text-white" style="font-size: 1.5rem;">{{ playlist.title|default:playlist.url }}</h1>
+                    <p class="flex items-center" style="font-size: 0.875rem; color: #9ca3af; gap: 1rem;">
+                        <span><b class="text-white format-number">{{ playlist.video_count|default:"0" }}</b> videolar</span>
+                    </p>
+                </div>
+                
+                <!-- Actions -->
+                <div class="flex pb-2 w-full md:w-auto" style="gap: 0.75rem;">
+                    <a href="{% url 'admin:youtube_playlist_change' playlist.pk %}" class="flex-1 md:flex-none inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg pure-dark-btn transition-colors">
+                        Tahrirlash
+                    </a>
+                    {% if playlist.url %}
+                        <a href="{{ playlist.url }}" target="_blank" class="flex-1 md:flex-none inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white transition-colors" style="background-color: #dc2626;">
+                            YouTube'da ochish
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if playlist.description %}
+                <div class="text-sm mt-4 max-w-4xl p-4 rounded-lg" style="background-color: #2d2d2d; border: 1px solid #333;">
+                    {{ playlist.description|linebreaksbr }}
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Videos Section -->
+    {% if related_videos %}
+    <div class="mt-8">
+        <h2 class="text-xl font-semibold mb-4 text-white flex items-center gap-2">
+            <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+            Videolar ro'yxati ({{ related_videos.count }})
+        </h2>
+        
+        <div class="overflow-x-auto rounded-lg pure-dark-table shadow-sm">
+            <table class="w-full text-left text-sm whitespace-nowrap">
+                <thead>
+                    <tr>
+                        <th class="px-4 py-3 font-medium">#</th>
+                        <th class="px-4 py-3 font-medium">Sarlavha</th>
+                        <th class="px-4 py-3 font-medium">Ko'rish</th>
+                        <th class="px-4 py-3 font-medium">Holat</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for vid in related_videos %}
+                        <tr class="transition-colors {% if forloop.counter > 10 %}playlist-video-hidden hidden{% endif %}">
+                            <td class="px-4 py-3" style="color: #9ca3af;">{{ forloop.counter }}</td>
+                            <td class="px-4 py-3 font-medium">
+                                <a href="{% url 'video_preview_view' vid.pk %}" class="hover:underline" style="color: #60a5fa;">{{ vid.title|truncatechars:60 }}</a>
+                            </td>
+                            <td class="px-4 py-3">
+                                <a href="{% url 'video_preview_view' vid.pk %}" class="text-xs px-3 py-1.5 rounded transition-colors inline-flex items-center gap-1 pure-dark-btn">
+                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                    Ko'rish
+                                </a>
+                            </td>
+                            <td class="px-4 py-3">
+                                {% if vid.status == 'new' %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium" style="background-color: rgba(30, 58, 138, 0.5); color: #93c5fd; border: 1px solid rgba(30, 58, 138, 0.8);">Yangi</span>
+                                {% elif vid.status == 'watched' %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium" style="background-color: rgba(20, 83, 45, 0.5); color: #86efac; border: 1px solid rgba(20, 83, 45, 0.8);">Ko'rilgan</span>
+                                {% else %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium" style="background-color: #374151; color: #d1d5db; border: 1px solid #4b5563;">{{ vid.get_status_display }}</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        {% if related_videos|length > 10 %}
+        <div class="mt-6 text-center">
+            <button type="button" class="px-6 py-2.5 rounded-lg shadow-sm text-sm font-medium pure-dark-btn focus:outline-none transition-colors inline-flex items-center gap-2" onclick="
+                var rows = document.querySelectorAll('.playlist-video-hidden');
+                var isHidden = rows[0].classList.contains('hidden');
+                rows.forEach(r => r.classList.toggle('hidden'));
+                this.innerHTML = isHidden 
+                    ? '<svg class=\'w-4 h-4\' fill=\'none\' stroke=\'currentColor\' viewBox=\'0 0 24 24\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M5 15l7-7 7 7\'></path></svg> Kamroq ko\'rsatish' 
+                    : '<svg class=\'w-4 h-4\' fill=\'none\' stroke=\'currentColor\' viewBox=\'0 0 24 24\'><path stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'2\' d=\'M19 9l-7 7-7-7\'></path></svg> Yana {{ related_videos|length|add:'-10' }} tasini ko\'rsatish';
+            ">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                Yana {{ related_videos|length|add:'-10' }} tasini ko'rsatish
+            </button>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    function formatCompactNumber(number) {
+        if (number >= 1000000000) {
+            return (number / 1000000000).toFixed(1).replace(/\.0$/, '') + ' mlrd';
+        }
+        if (number >= 1000000) {
+            return (number / 1000000).toFixed(1).replace(/\.0$/, '') + ' mln';
+        }
+        if (number >= 1000) {
+            return (number / 1000).toFixed(1).replace(/\.0$/, '') + ' ming';
+        }
+        return number.toString();
+    }
+
+    document.querySelectorAll('.format-number').forEach(el => {
+        let text = el.innerText.trim();
+        let num = parseInt(text, 10);
+        if(!isNaN(num) && num > 0) {
+            el.innerText = formatCompactNumber(num);
+        }
+    });
+</script>
+{% endblock %}

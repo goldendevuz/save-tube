@@ -812,6 +812,7 @@ class Video(AuditMixin, AutoEncryptHashMixin, AutoFetchUrlMetaMixin, TimeStamped
 
     tags = models.ManyToManyField(Label, blank=True, verbose_name=_("Teglar"))
     channels = models.ManyToManyField(Channel, blank=True, verbose_name=_("Kanallar"))
+    playlists = models.ManyToManyField('Playlist', blank=True, verbose_name=_("Pleylistlar"))
 
     checkout = models.DateTimeField(_("Tekshirish vaqti"), db_index=True, null=True, blank=True)
     deadline = models.DateTimeField(_("Muddati (Deadline)"), db_index=True, null=True, blank=True)

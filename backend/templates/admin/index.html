@@ -215,10 +215,22 @@
         {% if today_playlists %}
         <div>
             {% component "unfold/components/card.html" with title="📂 Bugungi pleylistlar" %}
+                    <div class="flex flex-wrap gap-2 mb-4 items-center justify-end">
+                        <span class="text-font-subtle-light dark:text-font-subtle-dark">Vaqtini surish:</span>
+                        <button type="submit" form="bulk-shift-playlists-form" name="shift_type" value="day" class="px-2 py-1 rounded bg-base-200 hover:bg-base-300 dark:bg-base-800 dark:hover:bg-base-700 text-xs font-medium">+1 kun</button>
+                        <button type="submit" form="bulk-shift-playlists-form" name="shift_type" value="week" class="px-2 py-1 rounded bg-base-200 hover:bg-base-300 dark:bg-base-800 dark:hover:bg-base-700 text-xs font-medium">+1 hafta</button>
+                        <button type="submit" form="bulk-shift-playlists-form" name="shift_type" value="month" class="px-2 py-1 rounded bg-base-200 hover:bg-base-300 dark:bg-base-800 dark:hover:bg-base-700 text-xs font-medium">+1 oy</button>
+                        <button type="submit" form="bulk-shift-playlists-form" name="shift_type" value="year" class="px-2 py-1 rounded bg-base-200 hover:bg-base-300 dark:bg-base-800 dark:hover:bg-base-700 text-xs font-medium">+1 yil</button>
+                    </div>
+                    <form id="bulk-shift-playlists-form" method="post" action="{% url 'bulk_shift_playlists' %}">
+                        {% csrf_token %}
                 <div class="overflow-x-auto">
                     <table class="border-spacing-none border-separate text-left text-sm w-full">
                         <thead class="text-font-important-light dark:text-font-important-dark">
                             <tr>
+                                <th class="border-b border-base-200 font-semibold pb-3 pr-3 dark:border-base-800 w-6">
+                                    <input type="checkbox" onchange="document.querySelectorAll('.playlist-cb').forEach(cb => cb.checked = this.checked)" class="rounded border-base-300 dark:border-base-700 text-primary-600 focus:ring-primary-500">
+                                </th>
                                 <th class="border-b border-base-200 font-semibold pb-3 pr-3 dark:border-base-800 w-6">#</th>
                                 <th class="border-b border-base-200 font-semibold pb-3 pr-3 dark:border-base-800">Sarlavha</th>
                                 <th class="border-b border-base-200 font-semibold pb-3 pr-3 dark:border-base-800">Kanal</th>
@@ -230,11 +242,14 @@
                         <tbody>
                             {% for pl in today_playlists %}
                                 <tr>
+                                    <td class="border-b border-base-200 py-3 pr-3 dark:border-base-800">
+                                        <input type="checkbox" name="playlist_ids" value="{{ pl.pk }}" class="playlist-cb rounded border-base-300 dark:border-base-700 text-primary-600 focus:ring-primary-500">
+                                    </td>
                                     <td class="border-b border-base-200 py-3 pr-3 dark:border-base-800 text-font-subtle-light dark:text-font-subtle-dark">
                                         {{ forloop.counter }}
                                     </td>
                                     <td class="border-b border-base-200 py-3 pr-3 dark:border-base-800">
-                                        <a class="hover:underline font-medium" href="{% url 'admin:youtube_playlist_change' pl.pk %}">{{ pl.title|truncatechars:50 }}</a>
+                                        <a class="hover:underline font-medium" href="{% url 'playlist_preview_view' pl.pk %}">{{ pl.title|truncatechars:50 }}</a>
                                     </td>
                                     <td class="border-b border-base-200 py-3 pr-3 dark:border-base-800 text-xs">
                                         {{ pl.channel.title|default:"—" }}
@@ -253,6 +268,7 @@
                         </tbody>
                     </table>
                 </div>
+                    </form>
             {% endcomponent %}
         </div>
         {% endif %}
@@ -261,10 +277,22 @@
         {% if today_channels %}
         <div>
             {% component "unfold/components/card.html" with title="📺 Bugungi kanallar" %}
+                    <div class="flex flex-wrap gap-2 mb-4 items-center justify-end">
+                        <span class="text-font-subtle-light dark:text-font-subtle-dark">Vaqtini surish:</span>
+                        <button type="submit" form="bulk-shift-channels-form" name="shift_type" value="day" class="px-2 py-1 rounded bg-base-200 hover:bg-base-300 dark:bg-base-800 dark:hover:bg-base-700 text-xs font-medium">+1 kun</button>
+                        <button type="submit" form="bulk-shift-channels-form" name="shift_type" value="week" class="px-2 py-1 rounded bg-base-200 hover:bg-base-300 dark:bg-base-800 dark:hover:bg-base-700 text-xs font-medium">+1 hafta</button>
+                        <button type="submit" form="bulk-shift-channels-form" name="shift_type" value="month" class="px-2 py-1 rounded bg-base-200 hover:bg-base-300 dark:bg-base-800 dark:hover:bg-base-700 text-xs font-medium">+1 oy</button>
+                        <button type="submit" form="bulk-shift-channels-form" name="shift_type" value="year" class="px-2 py-1 rounded bg-base-200 hover:bg-base-300 dark:bg-base-800 dark:hover:bg-base-700 text-xs font-medium">+1 yil</button>
+                    </div>
+                    <form id="bulk-shift-channels-form" method="post" action="{% url 'bulk_shift_channels' %}">
+                        {% csrf_token %}
                 <div class="overflow-x-auto">
                     <table class="border-spacing-none border-separate text-left text-sm w-full">
                         <thead class="text-font-important-light dark:text-font-important-dark">
                             <tr>
+                                <th class="border-b border-base-200 font-semibold pb-3 pr-3 dark:border-base-800 w-6">
+                                    <input type="checkbox" onchange="document.querySelectorAll('.channel-cb').forEach(cb => cb.checked = this.checked)" class="rounded border-base-300 dark:border-base-700 text-primary-600 focus:ring-primary-500">
+                                </th>
                                 <th class="border-b border-base-200 font-semibold pb-3 pr-3 dark:border-base-800 w-6">#</th>
                                 <th class="border-b border-base-200 font-semibold pb-3 pr-3 dark:border-base-800">Kanal nomi</th>
                                 <th class="border-b border-base-200 font-semibold pb-3 pr-3 dark:border-base-800">Kategoriya</th>
@@ -276,11 +304,14 @@
                         <tbody>
                             {% for ch in today_channels %}
                                 <tr class="{% if forloop.counter > 5 %}channels-hidden-row hidden{% endif %}">
+                                    <td class="border-b border-base-200 py-3 pr-3 dark:border-base-800">
+                                        <input type="checkbox" name="channel_ids" value="{{ ch.pk }}" class="channel-cb rounded border-base-300 dark:border-base-700 text-primary-600 focus:ring-primary-500">
+                                    </td>
                                     <td class="border-b border-base-200 py-3 pr-3 dark:border-base-800 text-font-subtle-light dark:text-font-subtle-dark">
                                         {{ forloop.counter }}
                                     </td>
                                     <td class="border-b border-base-200 py-3 pr-3 dark:border-base-800">
-                                        <a class="hover:underline font-medium" href="{% url 'admin:youtube_channel_change' ch.pk %}">{{ ch.title|truncatechars:40 }}</a>
+                                        <a class="hover:underline font-medium" href="{% url 'channel_preview_view' ch.pk %}">{{ ch.title|truncatechars:40 }}</a>
                                     </td>
                                     <td class="border-b border-base-200 py-3 pr-3 dark:border-base-800 text-xs">
                                         {{ ch.category.name|default:"—" }}
@@ -299,6 +330,7 @@
                         </tbody>
                     </table>
                 </div>
+                    </form>
                 {% if today_channels|length > 5 %}
                 <button id="toggle-channels-btn" onclick="
                     var rows = document.querySelectorAll('.channels-hidden-row');
