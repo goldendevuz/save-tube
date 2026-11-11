@@ -112,6 +112,17 @@ UNFOLD = {
     "SITE_HEADER": "SaveTube",
     "SITE_SUBHEADER": "Premium YouTube Management System",
     "SITE_SYMBOL": "play_circle",
+    "SITE_FAVICONS": [
+        {
+            "rel": "icon",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "href": lambda request: static("img/favicon.svg"),
+        },
+    ],
+    "SCRIPTS": [
+        lambda request: static("js/next_week_shortcut.js"),
+    ],
     "DASHBOARD_CALLBACK": "core.dashboard.dashboard_callback",
     "SHOW_HISTORY": True,
     "SHOW_VIEW_ON_SITE": True,

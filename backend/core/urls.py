@@ -2,6 +2,8 @@ from django.contrib import admin
 from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
+from django.templatetags.static import static as static_url
+from django.views.generic import RedirectView
 
 from core.backup import backup_page
 
@@ -12,6 +14,7 @@ from core.forms import SaveTubeLoginForm
 admin.site.login_form = SaveTubeLoginForm
 
 urlpatterns = [
+    path('favicon.ico', RedirectView.as_view(url=static_url('img/favicon.svg'), permanent=False)),
     path('', homepage_redirect, name='home'),
     path('register/', RegisterView.as_view(), name='register'),
     path('admin/backup/', backup_page, name='backup_page'),
