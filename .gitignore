@@ -30,3 +30,8 @@ staticfiles/
 seed.json
 backend/seed.json
 docker-compose.override.yml
+
+# Obunalarni import qilish: zaxira nusxalar va holat fayllari
+backend/backups/
+*.import-state.json
+*.csv
