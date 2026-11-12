@@ -430,6 +430,22 @@ def register_model(model):
             resolved_display.append(f)
         else:
             resolved_display.append(resolve_field(f))
+    # Kanallar ro'yxatida: YouTube'dagi kanalga to'g'ridan-to'g'ri o'tish (yangi tabda)
+    if model.__name__ == "Channel":
+        def youtube_link(self, obj):
+            url = obj.url or ""
+            # faqat http(s) — "javascript:" kabi havolalar chiqarilmaydi
+            if not url.startswith(("https://", "http://")):
+                return "-"
+            return format_html(
+                '<a href="{}" target="_blank" rel="noopener noreferrer" title="YouTube\'da ochish">'
+                '<span class="material-symbols-outlined" style="font-size:20px">open_in_new</span></a>',
+                url,
+            )
+        youtube_link.short_description = "YouTube"
+        admin_attrs["youtube_link"] = youtube_link
+        resolved_display.insert(1, "youtube_link")  # sarlavhadan keyingi ustun
+
     admin_attrs["list_display"] = resolved_display
     # Birinchi ustunni bosilishi mumkin qilish (qo'shish/tahrirlash tugmalari uchun)
     if resolved_display:

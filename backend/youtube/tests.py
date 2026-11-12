@@ -294,3 +294,22 @@ class ImportSubscriptionsTests(TestCase):
         fetch.assert_not_called()
         self.assertIn("Statistika olinadigan kanallar: 1", out)
         self.assertEqual(Channel.objects.count(), 0)
+
+
+class ChannelYoutubeLinkTests(TestCase):
+    def setUp(self):
+        from django.contrib import admin
+        self.model_admin = admin.site._registry[Channel]
+
+    def test_column_is_second_in_list_display(self):
+        self.assertEqual(self.model_admin.list_display[1], "youtube_link")
+
+    def test_link_opens_channel_in_new_tab(self):
+        html = self.model_admin.youtube_link(Channel(url="https://www.youtube.com/@ali"))
+        self.assertIn('href="https://www.youtube.com/@ali"', html)
+        self.assertIn('target="_blank"', html)
+        self.assertIn("noopener", html)
+
+    def test_unsafe_or_empty_url_has_no_link(self):
+        self.assertEqual(self.model_admin.youtube_link(Channel(url="javascript:alert(1)")), "-")
+        self.assertEqual(self.model_admin.youtube_link(Channel(url=None)), "-")
