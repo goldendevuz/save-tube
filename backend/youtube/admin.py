@@ -22,6 +22,39 @@ from .models import (
 )
 
 # ----------------------------
+# Obunachilar soni bo'yicha guruhlar (G1–G8)
+# ----------------------------
+SUBSCRIBER_GROUPS = [
+    # (kalit, nomi, min (kiritiladi), max (kiritilmaydi))
+    ("g1", "G1 · 0–999", 0, 1_000),
+    ("g2", "G2 · 1K–9.9K", 1_000, 10_000),
+    ("g3", "G3 · 10K–99K", 10_000, 100_000),
+    ("g4", "G4 · 100K–999K", 100_000, 1_000_000),
+    ("g5", "G5 · 1M–9.9M", 1_000_000, 10_000_000),
+    ("g6", "G6 · 10M–99M", 10_000_000, 100_000_000),
+    ("g7", "G7 · 100M–999M", 100_000_000, 1_000_000_000),
+    ("g8", "G8 · 1B+", 1_000_000_000, None),
+]
+
+
+class SubscriberGroupFilter(admin.SimpleListFilter):
+    title = "Obunachilar guruhi"
+    parameter_name = "subs_group"
+
+    def lookups(self, request, model_admin):
+        return [(key, label) for key, label, _lo, _hi in SUBSCRIBER_GROUPS]
+
+    def queryset(self, request, queryset):
+        for key, _label, low, high in SUBSCRIBER_GROUPS:
+            if self.value() == key:
+                queryset = queryset.filter(subscriber_count__gte=low)
+                if high is not None:
+                    queryset = queryset.filter(subscriber_count__lt=high)
+                return queryset
+        return queryset
+
+
+# ----------------------------
 # Channel date update actions
 # ----------------------------
 @action(description="Update selected channels' date for a month")
@@ -283,6 +316,7 @@ def register_model(model):
         admin_attrs["get_fields"] = get_fields
 
     if model.__name__ == "Channel":
+        admin_attrs["list_filter"] = [SubscriberGroupFilter] + admin_attrs["list_filter"]
         admin_attrs["actions"] = [update_channel_date_month, update_channel_date_week, update_channel_date_day, refresh_channel_stats]
         admin_attrs["list_editable"] = ["category", "is_hidden", "is_archived"]
     elif model.__name__ == "Video":
