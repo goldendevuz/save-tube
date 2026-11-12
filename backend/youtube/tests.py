@@ -313,3 +313,48 @@ class ChannelYoutubeLinkTests(TestCase):
     def test_unsafe_or_empty_url_has_no_link(self):
         self.assertEqual(self.model_admin.youtube_link(Channel(url="javascript:alert(1)")), "-")
         self.assertEqual(self.model_admin.youtube_link(Channel(url=None)), "-")
+
+
+class SubscriberGroupFilterTests(TestCase):
+    def setUp(self):
+        from django.contrib import admin
+        from youtube.admin import SubscriberGroupFilter
+        self.filter_cls = SubscriberGroupFilter
+        self.model_admin = admin.site._registry[Channel]
+        self.counts = {
+            "a": 0, "b": 999, "c": 1_000, "d": 9_999, "e": 10_000, "f": 99_999,
+            "g": 100_000, "h": 999_999, "i": 1_000_000, "j": 9_999_999,
+            "k": 10_000_000, "l": 99_999_999, "m": 100_000_000, "n": 999_999_999,
+            "o": 1_000_000_000, "p": 526_000_000_000 // 100,
+        }
+        for handle, count in self.counts.items():
+            channel = Channel(url=f"https://www.youtube.com/@{handle}", title=handle, subscriber_count=count)
+            channel.fetch_url_meta = lambda: None
+            channel.fetch_channel_stats = lambda: None
+            channel.save()
+
+    def titles(self, group):
+        from django.test import RequestFactory
+        request = RequestFactory().get("/", {"subs_group": group} if group else {})
+        flt = self.filter_cls(request, request.GET.copy(), Channel, self.model_admin)
+        return sorted(flt.queryset(request, Channel.objects.all()).values_list("subscriber_count", flat=True))
+
+    def test_filter_is_first_in_channel_list_filter(self):
+        self.assertIs(self.model_admin.list_filter[0], self.filter_cls)
+
+    def test_eight_groups_with_exact_boundaries(self):
+        self.assertEqual(self.titles("g1"), [0, 999])
+        self.assertEqual(self.titles("g2"), [1_000, 9_999])
+        self.assertEqual(self.titles("g3"), [10_000, 99_999])
+        self.assertEqual(self.titles("g4"), [100_000, 999_999])
+        self.assertEqual(self.titles("g5"), [1_000_000, 9_999_999])
+        self.assertEqual(self.titles("g6"), [10_000_000, 99_999_999])
+        self.assertEqual(self.titles("g7"), [100_000_000, 999_999_999])
+        self.assertEqual(self.titles("g8"), [1_000_000_000, 5_260_000_000])
+
+    def test_groups_cover_every_channel_once(self):
+        total = sum(len(self.titles(f"g{i}")) for i in range(1, 9))
+        self.assertEqual(total, Channel.objects.count())
+
+    def test_no_selection_returns_all(self):
+        self.assertEqual(len(self.titles(None)), Channel.objects.count())
