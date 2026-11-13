@@ -11,7 +11,7 @@ from django.core.management.base import CommandError
 from django.test import TestCase
 
 from youtube.management.commands.import_subscriptions import parse_row, parse_subs
-from youtube.models import Channel
+from youtube.models import Channel, Video
 
 FIELDS = ["channel_id", "title", "username", "channel_url", "logo_url",
           "subs_display", "subs_count", "description"]
@@ -358,3 +358,48 @@ class SubscriberGroupFilterTests(TestCase):
 
     def test_no_selection_returns_all(self):
         self.assertEqual(len(self.titles(None)), Channel.objects.count())
+
+
+class VideoDurationGroupFilterTests(TestCase):
+    def setUp(self):
+        from django.contrib import admin
+        from youtube.admin import DurationGroupFilter
+        self.filter_cls = DurationGroupFilter
+        self.model_admin = admin.site._registry[Video]
+        self.seconds = [0, 1, 59, 60, 299, 300, 599, 600, 1_199, 1_200, 2_399, 2_400,
+                        3_599, 3_600, 7_199, 7_200, 36_000]
+        for index, value in enumerate(self.seconds):
+            video = Video(url=f"https://www.youtube.com/watch?v=v{index:02d}", title=f"v{index}", duration=value)
+            video.fetch_url_meta = lambda: None
+            video.fetch_video_duration = lambda: None
+            video.save()
+
+    def durations(self, group):
+        from django.test import RequestFactory
+        request = RequestFactory().get("/", {"duration_group": group} if group else {})
+        flt = self.filter_cls(request, request.GET.copy(), Video, self.model_admin)
+        return sorted(flt.queryset(request, Video.objects.all()).values_list("duration", flat=True))
+
+    def test_filter_is_first_in_video_list_filter(self):
+        self.assertIs(self.model_admin.list_filter[0], self.filter_cls)
+
+    def test_eight_groups_with_exact_boundaries(self):
+        self.assertEqual(self.durations("g1"), [1, 59])
+        self.assertEqual(self.durations("g2"), [60, 299])
+        self.assertEqual(self.durations("g3"), [300, 599])
+        self.assertEqual(self.durations("g4"), [600, 1_199])
+        self.assertEqual(self.durations("g5"), [1_200, 2_399])
+        self.assertEqual(self.durations("g6"), [2_400, 3_599])
+        self.assertEqual(self.durations("g7"), [3_600, 7_199])
+        self.assertEqual(self.durations("g8"), [7_200, 36_000])
+
+    def test_unknown_duration_has_its_own_option(self):
+        self.assertEqual(self.durations("unknown"), [0])
+
+    def test_groups_and_unknown_cover_every_video_once(self):
+        total = sum(len(self.durations(f"g{i}")) for i in range(1, 9)) + len(self.durations("unknown"))
+        self.assertEqual(total, Video.objects.count())
+
+    def test_no_choice_or_unknown_key_keeps_everything(self):
+        self.assertEqual(len(self.durations(None)), Video.objects.count())
+        self.assertEqual(len(self.durations("zzz")), Video.objects.count())
