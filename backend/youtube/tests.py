@@ -403,3 +403,72 @@ class VideoDurationGroupFilterTests(TestCase):
     def test_no_choice_or_unknown_key_keeps_everything(self):
         self.assertEqual(len(self.durations(None)), Video.objects.count())
         self.assertEqual(len(self.durations("zzz")), Video.objects.count())
+
+
+class ParseUrlsTests(TestCase):
+    def test_splits_on_whitespace_commas_and_semicolons(self):
+        from youtube.bulk_urls import parse_urls
+        text = "https://youtu.be/a, https://youtu.be/b;https://youtu.be/c\nhttps://youtu.be/d  https://youtu.be/e"
+        self.assertEqual(len(parse_urls(text)), 5)
+
+    def test_drops_non_urls_and_duplicates_keeping_order(self):
+        from youtube.bulk_urls import parse_urls
+        text = "salom\nhttps://youtu.be/a\nhttps://youtu.be/A/\nhttps://youtu.be/b\nftp://x"
+        self.assertEqual(parse_urls(text), ["https://youtu.be/a", "https://youtu.be/b"])
+
+    def test_empty_input(self):
+        from youtube.bulk_urls import parse_urls
+        self.assertEqual(parse_urls(""), [])
+        self.assertEqual(parse_urls(None), [])
+
+
+class VideoBulkAddTests(TestCase):
+    def setUp(self):
+        user = get_user_model().objects.create_superuser("bulk", "bulk@example.com", "pw")
+        self.client.force_login(user)
+        patches = [
+            mock.patch.object(Video, "fetch_url_meta", lambda self: None),
+            mock.patch.object(Video, "fetch_video_duration", lambda self: None),
+        ]
+        for patch in patches:
+            patch.start()
+            self.addCleanup(patch.stop)
+        # Admin so'rovi "joriy foydalanuvchi"ni thread-local'da qoldiradi; keyingi testlarga o'tmasin.
+        from shared.utils import middleware
+        self.addCleanup(lambda: setattr(middleware._thread_locals, "user", None))
+
+    def add(self, urls):
+        return self.client.post("/admin/youtube/video/add/", {"url": urls, "status": "new", "start_from": 0, "_save": "Saqlash"}, follow=True)
+
+    def video_count(self):
+        return Video.objects.count()
+
+    def test_add_page_uses_a_textarea_for_urls(self):
+        response = self.client.get("/admin/youtube/video/add/")
+        self.assertContains(response, "<textarea")
+        self.assertContains(response, "Har bir qatorga bitta havola")
+
+    def test_several_urls_create_one_video_each(self):
+        self.add("https://www.youtube.com/watch?v=aaaaaaaaaaa\nhttps://www.youtube.com/watch?v=bbbbbbbbbbb\nhttps://www.youtube.com/watch?v=ccccccccccc")
+        self.assertEqual(self.video_count(), 3)
+
+    def test_single_url_still_works(self):
+        self.add("https://www.youtube.com/watch?v=aaaaaaaaaaa")
+        self.assertEqual(self.video_count(), 1)
+
+    def test_existing_urls_are_skipped_not_duplicated(self):
+        self.add("https://www.youtube.com/watch?v=aaaaaaaaaaa")
+        self.add("https://www.youtube.com/watch?v=aaaaaaaaaaa\nhttps://www.youtube.com/watch?v=bbbbbbbbbbb")
+        self.assertEqual(self.video_count(), 2)
+
+    def test_all_existing_urls_are_refused(self):
+        self.add("https://www.youtube.com/watch?v=aaaaaaaaaaa\nhttps://www.youtube.com/watch?v=bbbbbbbbbbb")
+        response = self.add("https://www.youtube.com/watch?v=aaaaaaaaaaa\nhttps://www.youtube.com/watch?v=bbbbbbbbbbb")
+        self.assertContains(response, "allaqachon mavjud")
+        self.assertEqual(self.video_count(), 2)
+
+    def test_edit_page_keeps_a_single_line_url_field(self):
+        self.add("https://www.youtube.com/watch?v=aaaaaaaaaaa")
+        video = Video.objects.get()
+        response = self.client.get(f"/admin/youtube/video/{video.pk}/change/")
+        self.assertNotContains(response, "Har bir qatorga bitta havola")
