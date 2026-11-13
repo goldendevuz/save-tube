@@ -1,5 +1,5 @@
 import traceback
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.utils.html import format_html
 from django.db import models as dj_models
 from import_export import resources, fields
@@ -11,6 +11,7 @@ from unfold.contrib.import_export.forms import ExportForm, ImportForm, Selectabl
 from unfold.decorators import action
 
 from shared.admin import BaseAdmin
+from .bulk_urls import create_copies, parse_urls, split_new_and_existing
 from .models import (
     Playlist,
     Video,
@@ -20,6 +21,14 @@ from .models import (
     YouTubeConfig,
     AuditLog
 )
+
+BULK_URL_MODELS = {"Video"}
+
+
+def _is_add_request(request):
+    match = getattr(request, "resolver_match", None)
+    return bool(match and match.url_name and match.url_name.endswith("_add"))
+
 
 # ----------------------------
 # Obunachilar soni bo'yicha guruhlar (G1–G8)
@@ -322,7 +331,16 @@ def register_model(model):
     admin_attrs["get_queryset"] = get_queryset
 
     def formfield_for_dbfield(self, db_field, request, **kwargs):
-        if db_field.name == "url":
+        if db_field.name == "url" and model.__name__ in BULK_URL_MODELS and _is_add_request(request):
+            from django.forms.widgets import Textarea
+            kwargs["widget"] = Textarea(attrs={
+                "rows": "5",
+                "cols": "80",
+                "class": "vLargeTextField",
+                "placeholder": "Har bir qatorga bitta havola (yoki bo'sh joy / vergul bilan ajrating)",
+            })
+            kwargs["help_text"] = "Bir nechta havolani birdaniga kiritish mumkin: hammasiga bir xil kategoriya, teg va boshqa sozlamalar qo'llanadi."
+        elif db_field.name == "url":
             from django.forms.widgets import TextInput
             kwargs["widget"] = TextInput(attrs={
                 "size": "80",
@@ -332,6 +350,42 @@ def register_model(model):
         return BaseAdmin.formfield_for_dbfield(self, db_field, request, **kwargs)
 
     admin_attrs["formfield_for_dbfield"] = formfield_for_dbfield
+
+    if model.__name__ in BULK_URL_MODELS:
+        def get_form(self, request, obj=None, **kwargs):
+            form_class = BaseAdmin.get_form(self, request, obj, **kwargs)
+            if obj is not None:
+                return form_class
+
+            class BulkUrlForm(form_class):
+                def clean_url(self):
+                    from django.core.exceptions import ValidationError
+                    urls = parse_urls(self.data.get("url", ""))
+                    self._bulk_extra, self._bulk_skipped = [], []
+                    if len(urls) <= 1:
+                        return urls[0] if urls else self.cleaned_data.get("url")
+                    new, existing = split_new_and_existing(model, urls)
+                    if not new:
+                        raise ValidationError("Kiritilgan havolalarning hammasi bazada allaqachon mavjud.")
+                    self._bulk_extra, self._bulk_skipped = new[1:], existing
+                    return new[0]
+
+            return BulkUrlForm
+
+        def save_related(self, request, form, formsets, change):
+            BaseAdmin.save_related(self, request, form, formsets, change)
+            extra = getattr(form, "_bulk_extra", None)
+            if change or extra is None or not (extra or getattr(form, "_bulk_skipped", None)):
+                return
+            created = create_copies(model, form.instance, form, extra, user=request.user)
+            skipped = getattr(form, "_bulk_skipped", [])
+            parts = [f"Jami {len(created) + 1} ta qo'shildi"]
+            if skipped:
+                parts.append(f"{len(skipped)} tasi bazada bor edi, o'tkazib yuborildi")
+            messages.success(request, ", ".join(parts) + ".")
+
+        admin_attrs["get_form"] = get_form
+        admin_attrs["save_related"] = save_related
 
     # ----------------------------
     # Per-model form field ordering
