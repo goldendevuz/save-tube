@@ -55,6 +55,43 @@ class SubscriberGroupFilter(admin.SimpleListFilter):
 
 
 # ----------------------------
+# Video davomiyligi bo'yicha guruhlar (G1–G8)
+# ----------------------------
+DURATION_GROUPS = [
+    # (kalit, nomi, min soniya (kiritiladi), max soniya (kiritilmaydi))
+    ("g1", "G1 · 1 daqiqagacha", 1, 60),
+    ("g2", "G2 · 1–5 daqiqa", 60, 300),
+    ("g3", "G3 · 5–10 daqiqa", 300, 600),
+    ("g4", "G4 · 10–20 daqiqa", 600, 1_200),
+    ("g5", "G5 · 20–40 daqiqa", 1_200, 2_400),
+    ("g6", "G6 · 40–60 daqiqa", 2_400, 3_600),
+    ("g7", "G7 · 1–2 soat", 3_600, 7_200),
+    ("g8", "G8 · 2 soatdan ko'p", 7_200, None),
+]
+DURATION_UNKNOWN = "unknown"
+
+
+class DurationGroupFilter(admin.SimpleListFilter):
+    title = "Davomiylik guruhi"
+    parameter_name = "duration_group"
+
+    def lookups(self, request, model_admin):
+        groups = [(key, label) for key, label, _lo, _hi in DURATION_GROUPS]
+        return groups + [(DURATION_UNKNOWN, "Noma'lum (0)")]
+
+    def queryset(self, request, queryset):
+        if self.value() == DURATION_UNKNOWN:
+            return queryset.filter(duration=0)
+        for key, _label, low, high in DURATION_GROUPS:
+            if self.value() == key:
+                queryset = queryset.filter(duration__gte=low)
+                if high is not None:
+                    queryset = queryset.filter(duration__lt=high)
+                return queryset
+        return queryset
+
+
+# ----------------------------
 # Channel date update actions
 # ----------------------------
 @action(description="Update selected channels' date for a month")
@@ -320,6 +357,7 @@ def register_model(model):
         admin_attrs["actions"] = [update_channel_date_month, update_channel_date_week, update_channel_date_day, refresh_channel_stats]
         admin_attrs["list_editable"] = ["category", "is_hidden", "is_archived"]
     elif model.__name__ == "Video":
+        admin_attrs["list_filter"] = [DurationGroupFilter] + admin_attrs["list_filter"]
         admin_attrs["actions"] = [refresh_video_duration]
         admin_attrs["list_editable"] = ["category", "priority", "is_hidden", "is_live"]
     elif model.__name__ == "Playlist":
